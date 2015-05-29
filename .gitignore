@@ -1,5 +1,6 @@
 *.swp
 *.log
+*.pyc
 .ropeproject
 db.sqlite3
 test.sh
