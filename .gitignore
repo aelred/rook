@@ -1,0 +1,5 @@
+*.swp
+*.log
+.ropeproject
+db.sqlite3
+test.sh
