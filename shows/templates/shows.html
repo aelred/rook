@@ -14,7 +14,7 @@
         </span>
         <ul class="episodes">
             {% for episode in season.episode_set.all %}
-            <li>{{ episode.num }} - {{episode.title}}</li>
+            <li class="episode">{{ episode.num }} - {{episode.title}}</li>
             {% endfor %}
         </ul>
     </li>

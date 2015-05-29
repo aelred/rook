@@ -50,7 +50,7 @@ class DownloadShowTest(StaticLiveServerTestCase):
         show_link = next(row for row in rows if row.text == 'Game of Thrones')
         show_link.find_element_by_tag_name('a').click()
 
-        # The user sees some information about the show's seasons
+        # The user sees some information about the show's seasons...
         season_list = self.browser.find_element_by_id('seasons')
         seasons = season_list.find_elements_by_class_name('season')
         season_titles = [
@@ -60,3 +60,12 @@ class DownloadShowTest(StaticLiveServerTestCase):
             ['Specials', 'Season 1', 'Season 2', 'Season 3', 'Season 4'],
             season_titles[:5]
         )
+
+        # ...and accidentally reads a spoiler
+        season_3 = next(
+            s for s in seasons
+            if s.find_element_by_class_name('season-title').text == 'Season 3'
+        )
+        episodes = season_3.find_elements_by_class_name('episode')
+        episode_titles = [e.text for e in episodes]
+        self.assertIn('9 - The Rains of Castamere', episode_titles)
