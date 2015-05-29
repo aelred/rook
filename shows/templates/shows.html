@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>{{ show.title }}</h2>
+<ul id="seasons">
+    {% for season in show.season_set.all %}
+    <li class="season">
+        <span class="season-title">
+            {% if season.num != 0 %}
+                Season {{ season.num }}
+            {% else %}
+                Specials
+            {% endif %}
+        </span>
+        <ul class="episodes">
+            {% for episode in season.episode_set.all %}
+            <li>{{ episode.num }} - {{episode.title}}</li>
+            {% endfor %}
+        </ul>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}
