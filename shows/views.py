@@ -12,7 +12,9 @@ def home_page(request):
 
 def search(request):
     results = _t.search(request.GET['q'])
-    shows = [Show.from_tvdb(result['id'], populate=False) for result in results]
+    shows = [
+        Show.from_tvdb(result['id'], populate=False) for result in results
+    ]
     return render(request, 'search.html', {'results': shows})
 
 

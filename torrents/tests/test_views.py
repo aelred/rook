@@ -1,5 +1,4 @@
 from django.test import TestCase
-from django.core.validators import URLValidator
 
 from shows.models import Show, Season, Episode
 

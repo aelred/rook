@@ -27,7 +27,6 @@ class Show(models.Model):
 
         # fetch show if it isn't in database
         if show is None:
-            tvdb_seasons = tvdb_show
             show = Show.objects.create(
                 id=id_, title=tvdb_show['seriesname'], populated=populate
             )
