@@ -12,6 +12,15 @@ class DownloadShowTest(StaticLiveServerTestCase):
     def tearDown(self):
         self.browser.quit()
 
+    def search_first_result(self, search_term):
+        inputbox = self.browser.find_element_by_id('search')
+        inputbox.send_keys(search_term)
+        inputbox.send_keys(Keys.ENTER)
+
+        results = self.browser.find_element_by_id('search_results')
+        first_row = results.find_element_by_tag_name('tr')
+        first_row.find_element_by_tag_name('a').click()
+
     def test_lookup_show(self):
         # User opens the site and sees the title 'Rook'
         self.browser.get(self.live_server_url)
@@ -40,15 +49,7 @@ class DownloadShowTest(StaticLiveServerTestCase):
         self.browser.get(self.live_server_url)
 
         # The user searches for a new show she's heard of
-        inputbox = self.browser.find_element_by_id('search')
-        inputbox.send_keys('Game of Thrones')
-        inputbox.send_keys(Keys.ENTER)
-
-        # The user selects the show they want
-        results = self.browser.find_element_by_id('search_results')
-        rows = results.find_elements_by_tag_name('tr')
-        show_link = next(row for row in rows if row.text == 'Game of Thrones')
-        show_link.find_element_by_tag_name('a').click()
+        self.search_first_result('Game of Thrones')
 
         # The user sees some information about the show's seasons...
         season_list = self.browser.find_element_by_id('seasons')
@@ -69,3 +70,23 @@ class DownloadShowTest(StaticLiveServerTestCase):
         episodes = season_3.find_elements_by_class_name('episode')
         episode_titles = [e.text for e in episodes]
         self.assertIn('9 - The Rains of Castamere', episode_titles)
+
+    def test_episode_torrent_list(self):
+        self.browser.get(self.live_server_url)
+
+        # The user searches for a show they want to find torrents for
+        self.search_first_result('community')
+
+        # The user clicks the next episode they need
+        episodes = self.browser.find_elements_by_class_name('episode')
+        episode = next(e for e in episodes if e.text == '1 - Ladders')
+        episode.find_element_by_tag_name('a').click()
+
+        # The user sees a list of torrents for this episode (6x1)
+        torrent_id = self.browser.find_element_by_id('torrents')
+        torrents = torrent_id.find_elements_by_class_name('torrent')
+        self.assertGreater(len(torrents), 0)
+        for torrent in torrents:
+            self.assertIn('Community', torrent.text)
+            self.assertIn('6', torrent.text)
+            self.assertIn('1', torrent.text)
