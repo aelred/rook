@@ -90,3 +90,7 @@ class DownloadShowTest(StaticLiveServerTestCase):
             self.assertIn('Community', torrent.text)
             self.assertIn('6', torrent.text)
             self.assertIn('1', torrent.text)
+
+        # The user sees that each torrent links to a torrent or magnet
+        for torrent in torrents:
+            torrent.find_element_by_tag_name('a')
