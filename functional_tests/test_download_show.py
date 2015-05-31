@@ -7,7 +7,7 @@ class DownloadShowTest(StaticLiveServerTestCase):
 
     def setUp(self):
         self.browser = webdriver.PhantomJS()
-        self.browser.implicitly_wait(3)
+        self.browser.implicitly_wait(5)
 
     def tearDown(self):
         self.browser.quit()
