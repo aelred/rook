@@ -87,3 +87,7 @@ STATIC_URL = '/static/'
 
 # template directories
 TEMPLATE_DIRS = (os.path.join(BASE_DIR, 'templates'),)
+
+
+# test runner
+TEST_RUNNER = 'rook.test_runner.TestRunner'

@@ -1,13 +1,17 @@
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+
+from rook.test_runner import webdriver
 
 
 class DownloadShowTest(StaticLiveServerTestCase):
 
+    def __init__(self, *args, **options):
+        super().__init__(*args, **options)
+
     def setUp(self):
-        self.browser = webdriver.PhantomJS()
-        self.browser.implicitly_wait(5)
+        self.browser = webdriver()
+        self.browser.implicitly_wait(3)
 
     def tearDown(self):
         self.browser.quit()
