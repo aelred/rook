@@ -27,7 +27,7 @@ def read():
 
     try:
         with open(path(), 'r+') as f:
-            config.read(f)
+            config.read_file(f)
     except FileNotFoundError:
         # create new config file with default settings
         write()

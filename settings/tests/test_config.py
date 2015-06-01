@@ -8,7 +8,7 @@ from unittest.mock import patch, MagicMock
 @patch('builtins.open')
 class TestConfig(TestCase):
 
-    @patch('settings.config.config.read')
+    @patch('settings.config.config.read_file')
     def test_read(self, read_func, open_func):
         open_func.return_value = MagicMock()
         enter = open_func.return_value.__enter__.return_value

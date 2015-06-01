@@ -2,9 +2,10 @@ from django.test import TestCase
 
 from unittest.mock import patch
 import shutil
-import rook.startup
+import os
 
 import settings.config
+import rook.startup
 
 
 @patch('settings.views.utorrent_ui')
@@ -34,6 +35,25 @@ class TestSettingsView(TestCase):
         self.assertIn('host = localhost:8080\n', config)
         self.assertIn('username = admin\n', config)
         self.assertIn('password = \n', config)
+
+    def test_read_settings(self, utorrent_ui):
+        # create a settings file
+        if not os.path.exists(settings.config.dir_):
+            os.makedirs(settings.config.dir_)
+
+        with open(settings.config.path(), 'w+') as f:
+            f.write('[utorrent]\n')
+            f.write('host = thehost:1\n')
+            f.write('username = myusername\n')
+            f.write('password = pass\n')
+
+        # simulate starting up
+        rook.startup.run()
+
+        response = self.client.get('/settings')
+        self.assertEqual(response.context['utorrent_host'], 'thehost:1')
+        self.assertEqual(response.context['utorrent_username'], 'myusername')
+        self.assertEqual(response.context['utorrent_password'], 'pass')
 
     @patch.dict('settings.config.config', test_config)
     def test_utorrent_settings(self, utorrent_ui):
