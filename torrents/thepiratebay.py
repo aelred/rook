@@ -17,8 +17,8 @@ class ThePirateBay:
 
     _search = '{url}/search/{query}/{page}/{sort}/{category}'
     _xpath = '//table[@id="searchResult"]//tr/td'
-    _dat_re = re.compile(r'Uploaded (?P<uploaded>.+), Size (?P<size>.+), '
-                         'ULed by ')
+    _dat_re = re.compile(r'Uploaded\s+(?P<uploaded>.+)\s*,\s+'
+                         'Size\s+(?P<size>.+)\s*,\s+ULed by')
 
     def __init__(self):
         self.url = 'https://thepiratebay.mn'
@@ -41,7 +41,7 @@ class ThePirateBay:
             leechers = tree.xpath(self._xpath + '[last()]/text()')
             magnets = tree.xpath(self._xpath +
                                  '/a/img[@alt="Magnet link"]/../@href')
-            data = tree.xpath(self._xpath + '/font[@class="detDesc"]/text()')
+            data = tree.xpath(self._xpath + '/font[@class="detDesc"]')
 
             # Check if no more results
             if len(names) == 0:
@@ -49,7 +49,8 @@ class ThePirateBay:
 
             for name, seed, leech, magnet, dat in zip(names, seeders, leechers,
                                                       magnets, data):
-                re_match = self._dat_re.match(dat).groupdict()
+                dtext = dat.text_content().replace('"', '').strip()
+                re_match = self._dat_re.match(dtext).groupdict()
 
                 yield {
                     'name': name, 'seeders': int(seed), 'leechers': int(leech),

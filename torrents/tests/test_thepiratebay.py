@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.core.validators import URLValidator
 
 import itertools
+from unittest.mock import patch
 
 from torrents.thepiratebay import to_bytes, ThePirateBay
 
@@ -35,3 +36,52 @@ class ThePirateBayTest(TestCase):
             self.assertIsInstance(torrent['url'], str)
 
         self.assertTrue(has_torrents)
+
+    @patch('torrents.thepiratebay.requests.get')
+    def test_search_mocked_page(self, rget):
+        rget.return_value.text = """
+        <html>
+            <table id="searchResult">
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="detName">
+                                <a>A name</a>
+                            </div>
+                            <a href="a magnet link">
+                                <img alt="Magnet link"></img>
+                            </a>
+                            <font class="detDesc">
+                                "Uploaded "
+                                <b>Really recently</b>
+                                ", Size 300 B, ULed by "
+                                <a class="detDesc" href="some guy">some guy</a>
+                            </font>
+                        </td>
+                        <td>80085</td>
+                        <td>1337</td>
+                    </tr>
+                </tbody>
+            </table>
+        </html>
+        """
+        tpb = ThePirateBay()
+        torrents = tpb.search('whatever')
+
+        # make sure search finds the one torrent
+        torrent = next(torrents)
+        self.assertEqual(
+            torrent,
+            {
+                'name': 'A name',
+                'seeders': 80085,
+                'leechers': 1337,
+                'uploaded': 'Really recently',
+                'size': 300,
+                'url': 'a magnet link'
+            }
+        )
+
+        # make sure the next torrent is the same result
+        # (this is because every page is the same due to the mocking)
+        self.assertEqual(torrent, next(torrents))
