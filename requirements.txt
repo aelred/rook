@@ -4,3 +4,5 @@ requests==2.7.0
 requests-cache==0.4.10
 selenium==2.45.0
 tvdb-api==1.10
+appdirs==1.4
+git+git://github.com/aelred/py-utorrent.git@v0.1

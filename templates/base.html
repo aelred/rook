@@ -1,8 +1,13 @@
+{% load staticfiles %}
+
 <html>
     <head>
             <!-- JQuery CDN -->
-            <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
-            <script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+            <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+            <script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+
+            <!-- js.cookie -->
+            <script src="{% static 'js.cookie.js' %}"></script>
 
             <!-- Latest compiled and minified CSS -->
             <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
@@ -23,6 +28,7 @@
                     <input id="search" 
                         placeholder="Search for a TV show" name="q"/>
                 </form>
+                <a href="{% url 'settings' %}" id="settings">Settings</a>
             </div>
             <div class="row">
                 {% block content %}{% endblock %}

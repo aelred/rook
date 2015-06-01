@@ -1,5 +1,6 @@
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium.webdriver.common.keys import Keys
+from unittest.mock import patch, MagicMock
 
 from rook.test_runner import webdriver
 
@@ -24,6 +25,19 @@ class DownloadShowTest(StaticLiveServerTestCase):
         results = self.browser.find_element_by_id('search_results')
         first_row = results.find_element_by_tag_name('tr')
         first_row.find_element_by_tag_name('a').click()
+
+    def check_setting(self, setting, value):
+        inputbox = self.browser.find_element_by_id(setting)
+        self.assertEqual(inputbox.get_attribute('value'), value)
+
+    def choose_setting(self, setting, label, default, value):
+        label_elem = self.browser.find_element_by_id(
+            '{}-label'.format(setting))
+        self.assertEqual(label_elem.text, label)
+        inputbox = self.browser.find_element_by_id(setting)
+        self.assertEqual(inputbox.get_attribute('value'), default)
+        inputbox.clear()
+        inputbox.send_keys(value)
 
     def test_lookup_show(self):
         # User opens the site and sees the title 'Rook'
@@ -98,3 +112,43 @@ class DownloadShowTest(StaticLiveServerTestCase):
         # The user sees that each torrent links to a torrent or magnet
         for torrent in torrents:
             torrent.find_element_by_tag_name('a')
+
+    @patch('torrents.utorrent_ui.client.UTorrentClient')
+    def test_utorrent_download(self, ut_client):
+        self.browser.get(self.live_server_url)
+
+        # The user starts their utorrent client
+        ut_host = '192.168.0.105:9876'
+        ut_user = 'the_user'
+        ut_pass = 'changeme'
+        ut_client.return_value = MagicMock()
+        ut = ut_client.return_value
+
+        # The user goes to settings to enter their utorrent settings
+        settings = self.browser.find_element_by_id('settings')
+        settings.click()
+        self.choose_setting('utorrent-host', 'uTorrent host', 'localhost:8080',
+                            ut_host)
+        self.choose_setting('utorrent-username', 'uTorrent username', 'admin',
+                            ut_user)
+        self.choose_setting('utorrent-password', 'uTorrent password', '',
+                            ut_pass)
+        self.browser.find_element_by_id('apply').click()
+
+        self.check_setting('utorrent-host', ut_host)
+        self.check_setting('utorrent-username', ut_user)
+        self.check_setting('utorrent-password', ut_pass)
+
+        # The user wants to download an episode to their utorrent client
+        self.search_first_result('the big bang theory')
+        episode = self.browser.find_element_by_class_name('episode')
+        episode.find_element_by_tag_name('a').click()
+
+        # The user enthusiastically selects the first torrent they see
+        torrent = self.browser.find_element_by_class_name('torrent')
+        torrent.find_element_by_tag_name('a').click()
+
+        # The user notices that uTorrent has added the torrent they selected
+        ut_client.assert_called_with('http://{}/gui/'.format(ut_host),
+                                     ut_user, ut_pass)
+        self.assertTrue(ut.addurl.called)

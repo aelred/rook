@@ -1,6 +1,7 @@
 from django.db import models
 
 from torrents.thepiratebay import ThePirateBay
+import torrents.utorrent_ui as utorrent
 from shows.models import Episode
 
 tpb = ThePirateBay()
@@ -19,4 +20,21 @@ class Torrent(models.Model):
 
     episode = models.ForeignKey(Episode)
     name = models.TextField()
-    url = models.TextField()  # this is not a URLField, to support magnet links
+
+    # this is not a URLField, to support magnet links
+    url = models.TextField(unique=True)
+
+
+class DownloadManager(models.Manager):
+
+    def create(self, *args, **kwargs):
+        download = super().create(*args, **kwargs)
+        utorrent.download(download)
+        return download
+
+
+class Download(models.Model):
+
+    objects = DownloadManager()
+
+    torrent = models.ForeignKey(Torrent, unique=True)

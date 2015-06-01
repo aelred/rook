@@ -4,8 +4,26 @@
     <table id="torrents">
     {% for torrent in torrents %}
         <tr class="torrent">
-            <td><a href="{{ torrent.url }}">{{ torrent.name }}</a></td>
+            <td>
+                <a id="torrent-link" href="#{{ torrent.id }}">
+                    {{ torrent.name }}
+                </a>
+            </td>
         </tr>
     {% endfor %}
     </table>
+
+<script type="text/javascript">
+$(document).ready( function() {
+    var csrftoken = Cookies.get('csrftoken');
+
+    $('#torrent-link').click( function() {
+        var torrent = this.hash.split('#')[1];
+        $.post('{% url 'downloads' %}', {
+            torrent: torrent, csrfmiddlewaretoken: csrftoken
+        });
+    });
+});
+</script>
+
 {% endblock %}
