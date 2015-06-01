@@ -3,10 +3,10 @@ import appdirs
 import os
 
 dir_ = appdirs.user_config_dir('rook')
-path = os.path.join(dir_, 'config.ini')
 
-if not os.path.exists(dir_):
-    os.makedirs(dir_)
+
+def path():
+    return os.path.join(dir_, 'config.ini')
 
 config = configparser.ConfigParser()
 
@@ -20,11 +20,22 @@ defaults = {
 
 
 def read():
+    if not os.path.exists(dir_):
+        os.makedirs(dir_)
+
     config.read_dict(defaults)
-    with open(path, 'r+') as f:
-        config.read(f)
+
+    try:
+        with open(path(), 'r+') as f:
+            config.read(f)
+    except FileNotFoundError:
+        # create new config file with default settings
+        write()
 
 
 def write():
-    with open(path, 'w+') as f:
+    if not os.path.exists(dir_):
+        os.makedirs(dir_)
+
+    with open(path(), 'w+') as f:
         config.write(f)

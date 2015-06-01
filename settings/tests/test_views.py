@@ -1,11 +1,12 @@
 from django.test import TestCase
 
+from unittest.mock import patch
+import shutil
 import rook.startup
 
-from unittest.mock import patch
+import settings.config
 
 
-@patch('settings.config.write')
 @patch('settings.views.utorrent_ui')
 class TestSettingsView(TestCase):
 
@@ -17,16 +18,25 @@ class TestSettingsView(TestCase):
         }
     }
 
-    def tearDown(self):
-        # reset config file
+    def setUp(self):
+        # delete config folder like it's a fresh startup
+        shutil.rmtree(settings.config.dir_)
         rook.startup.run()
 
-    def test_settings_view(self, utorrent_ui, write_func):
+    def test_settings_view(self, utorrent_ui):
         response = self.client.get('/settings')
         self.assertTemplateUsed(response, 'settings.html')
 
+    def test_write_default(self, utorrent_ui):
+        with open(settings.config.path()) as f:
+            config = f.readlines()
+        self.assertIn('[utorrent]\n', config)
+        self.assertIn('host = localhost:8080\n', config)
+        self.assertIn('username = admin\n', config)
+        self.assertIn('password = \n', config)
+
     @patch.dict('settings.config.config', test_config)
-    def test_utorrent_settings(self, utorrent_ui, write_func):
+    def test_utorrent_settings(self, utorrent_ui):
         response = self.client.get('/settings')
         ut_config = self.test_config['utorrent']
         self.assertEqual(response.context['utorrent_host'], ut_config['host'])
@@ -42,7 +52,7 @@ class TestSettingsView(TestCase):
             password=ut_config['password']
         )
 
-    def test_changing_settings(self, utorrent_ui, write_func):
+    def test_changing_settings(self, utorrent_ui):
         data = {
             'csrfmiddlewaretoken': 'blahblahblah',
             'utorrent-username': 'bilbo',
@@ -54,8 +64,10 @@ class TestSettingsView(TestCase):
         self.assertEquals(response.context['utorrent_username'], 'bilbo')
         self.assertEquals(response.context['utorrent_password'], 'secret')
 
-    def test_saving_settings(self, utorrent_ui, write_func):
+    def test_saving_settings(self, utorrent_ui):
         data = {'utorrent-host': 'localhost:9000'}
-        self.assertFalse(write_func.called)
         self.client.post('/settings', data=data)
-        self.assertTrue(write_func.called)
+
+        with open(settings.config.path()) as f:
+            config = f.read()
+        self.assertIn('host = localhost:9000', config)

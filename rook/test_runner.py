@@ -1,6 +1,12 @@
 import django.test.runner
 import selenium.webdriver as selenium_webdriver
 
+import tempfile
+import shutil
+
+import settings.config
+import rook.startup
+
 webdriver = None
 
 
@@ -21,3 +27,25 @@ class TestRunner(django.test.runner.DiscoverRunner):
                             dest='driver', default='firefox',
                             choices=['firefox', 'phantomjs'],
                             help='Webdriver to use')
+
+    def setup_test_environment(self, **kwargs):
+        super(TestRunner, self).setup_test_environment(**kwargs)
+
+        # create temporary config folder
+        self.prev_cfg = settings.config.dir_
+        settings.config.dir_ = tempfile.mkdtemp()
+
+        # make sure config is read in
+        rook.startup.run()
+
+    def teardown_test_environment(self, **kwargs):
+        super(TestRunner, self).teardown_test_environment(**kwargs)
+
+        # delete temporary folder
+        shutil.rmtree(settings.config.dir_)
+
+        # point back to original config folder
+        settings.config.dir_ = self.prev_cfg
+
+        # read in old config
+        rook.startup.run()

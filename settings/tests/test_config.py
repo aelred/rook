@@ -1,17 +1,12 @@
 from django.test import TestCase
 
 from settings.config import config, write, read
-import rook.startup
 
 from unittest.mock import patch, MagicMock
 
 
 @patch('builtins.open')
 class TestConfig(TestCase):
-
-    def tearDown(self):
-        # reset config file
-        rook.startup.run()
 
     @patch('settings.config.config.read')
     def test_read(self, read_func, open_func):
