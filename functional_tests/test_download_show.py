@@ -30,7 +30,7 @@ class DownloadShowTest(StaticLiveServerTestCase):
         inputbox = self.browser.find_element_by_id(setting)
         self.assertEqual(inputbox.get_attribute('value'), value)
 
-    def choose_setting(self, setting, label, default, value):
+    def choose_setting(self, setting, label, default, value, password=False):
         label_elem = self.browser.find_element_by_id(
             '{}-label'.format(setting))
         self.assertEqual(label_elem.text, label)
@@ -38,6 +38,9 @@ class DownloadShowTest(StaticLiveServerTestCase):
         self.assertEqual(inputbox.get_attribute('value'), default)
         inputbox.clear()
         inputbox.send_keys(value)
+
+        if password:
+            self.assertEquals(inputbox.get_attribute('type'), 'password')
 
     def test_lookup_show(self):
         # User opens the site and sees the title 'Rook'
@@ -132,7 +135,7 @@ class DownloadShowTest(StaticLiveServerTestCase):
         self.choose_setting('utorrent-username', 'uTorrent username', 'admin',
                             ut_user)
         self.choose_setting('utorrent-password', 'uTorrent password', '',
-                            ut_pass)
+                            ut_pass, password=True)
         self.browser.find_element_by_id('apply').click()
 
         self.check_setting('utorrent-host', ut_host)
