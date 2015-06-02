@@ -1,5 +1,5 @@
 from django.test import TestCase
-from django.core.exceptions import ValidationError
+from django.db.utils import IntegrityError
 
 import itertools
 from unittest.mock import patch
@@ -42,10 +42,8 @@ class TorrentModelTest(TestCase):
         torrent_2.full_clean()
 
         # Test bad state
-        torrent_3 = Torrent.objects.create(episode=self.episode_2, name='a',
-                                           url='0')
-        with self.assertRaises(ValidationError):
-            torrent_3.full_clean()
+        with self.assertRaises(IntegrityError):
+            Torrent.objects.create(episode=self.episode_2, name='a', url='0')
 
 
 @patch('torrents.models.utorrent')
@@ -70,6 +68,5 @@ class DownloadModelTest(TestCase):
         download_2.full_clean()
 
         # Test bad state
-        download_3 = Download.objects.create(torrent=self.torrent1)
-        with self.assertRaises(ValidationError):
-            download_3.full_clean()
+        with self.assertRaises(IntegrityError):
+            Download.objects.create(torrent=self.torrent1)
