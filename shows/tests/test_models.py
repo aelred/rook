@@ -17,7 +17,7 @@ class ShowModelTest(TestCase):
     def test_from_tvdb(self):
         # Make sure model can load data on Dexter from thetvdb
         id_ = _dexter_tvdbid
-        show = Show.from_tvdb(id_)
+        show = Show.objects.from_tvdb(id_)
         self.assertEqual(show.id, id_)
         self.assertEqual(show.title, 'Dexter')
         self.assertTrue(show.populated)
@@ -34,7 +34,7 @@ class ShowModelTest(TestCase):
     def test_from_tvdb_without_populating(self):
         # test we can get show data without season or episode data
         id_ = _house_tvdbid
-        show = Show.from_tvdb(id_, populate=False)
+        show = Show.objects.from_tvdb(id_, populate=False)
         self.assertEqual(show.title, 'House')
 
         # no seasons or episodes
@@ -45,8 +45,8 @@ class ShowModelTest(TestCase):
     def test_from_tvdb_existing(self):
         # Make sure an existing show can be got from thetvdb
         id_ = _house_tvdbid
-        show1 = Show.from_tvdb(id_)
-        show2 = Show.from_tvdb(id_)
+        show1 = Show.objects.from_tvdb(id_)
+        show2 = Show.objects.from_tvdb(id_)
 
         # Make sure both shows are equal and valid in the database
         self.assertEquals(show1, show2)
@@ -56,9 +56,9 @@ class ShowModelTest(TestCase):
     def test_from_tvdb_unpopulated(self):
         # Make sure accessing a previously unpopulated TVDB entry populates it
         id_ = _dexter_tvdbid
-        show1 = Show.from_tvdb(id_, populate=False)
+        show1 = Show.objects.from_tvdb(id_, populate=False)
         self.assertFalse(show1.populated)
-        show2 = Show.from_tvdb(id_)
+        show2 = Show.objects.from_tvdb(id_)
         self.assertTrue(show2.populated)
         self.assertEquals(show1, show2)
         self.assertGreater(Season.objects.count(), 0)
@@ -67,8 +67,8 @@ class ShowModelTest(TestCase):
     def test_from_tvdb_unpopulated_twice(self):
         # Make sure show never populates even when an existing show is fetched
         id_ = _dexter_tvdbid
-        Show.from_tvdb(id_, populate=False)
-        show = Show.from_tvdb(id_, populate=False)
+        Show.objects.from_tvdb(id_, populate=False)
+        show = Show.objects.from_tvdb(id_, populate=False)
         self.assertFalse(show.populated)
         self.assertEqual(Season.objects.count(), 0)
         self.assertEqual(Episode.objects.count(), 0)

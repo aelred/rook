@@ -5,10 +5,9 @@ import tvdb_api
 _t = tvdb_api.Tvdb()
 
 
-class Show(models.Model):
+class ShowManager(models.Manager):
 
-    @classmethod
-    def from_tvdb(cls, id_, populate=True):
+    def from_tvdb(self, id_, populate=True):
         # Load a show from the tvdb using a TVDB id.
         try:
             # get show if it already exists
@@ -20,7 +19,7 @@ class Show(models.Model):
             else:
                 show.populated = True
                 show.save()
-        except cls.DoesNotExist:
+        except Show.DoesNotExist:
             show = None
 
         tvdb_show = _t[id_]
@@ -42,6 +41,11 @@ class Show(models.Model):
                     )
 
         return show
+
+
+class Show(models.Model):
+
+    objects = ShowManager()
 
     title = models.TextField()
     populated = models.BooleanField(default=False)

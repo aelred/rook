@@ -13,10 +13,12 @@ def home_page(request):
 def search(request):
     results = _t.search(request.GET['q'])
     shows = [
-        Show.from_tvdb(result['id'], populate=False) for result in results
+        Show.objects.from_tvdb(result['id'], populate=False)
+        for result in results
     ]
     return render(request, 'search.html', {'results': shows})
 
 
 def shows(request, id_):
-    return render(request, 'shows.html', {'show': Show.from_tvdb(int(id_))})
+    return render(request, 'shows.html',
+                  {'show': Show.objects.from_tvdb(int(id_))})
