@@ -37,4 +37,4 @@ class Download(models.Model):
 
     objects = DownloadManager()
 
-    torrent = models.ForeignKey(Torrent, unique=True)
+    torrent = models.OneToOneField(Torrent)
