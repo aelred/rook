@@ -15,5 +15,6 @@ def torrents(request, episode_id):
 
 def downloads(request):
     torrent = Torrent.objects.get(pk=int(request.POST['torrent']))
-    Download.objects.create(torrent=torrent)
+    # return existing download if possible
+    Download.objects.get_or_create(torrent=torrent)
     return HttpResponse('', status=201)

@@ -27,6 +27,12 @@ class Torrent(models.Model):
 
 class DownloadManager(models.Manager):
 
+    def get_or_create(self, *args, **kwargs):
+        download, created = super().get_or_create(*args, **kwargs)
+        if created:
+            utorrent.download(download)
+        return download, created
+
     def create(self, *args, **kwargs):
         download = super().create(*args, **kwargs)
         utorrent.download(download)

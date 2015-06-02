@@ -70,3 +70,27 @@ class DownloadModelTest(TestCase):
         # Test bad state
         with self.assertRaises(IntegrityError):
             Download.objects.create(torrent=self.torrent1)
+
+    def test_create(self, utorrent):
+        # Creating a download should trigger a utorrent call
+        download = Download.objects.create(torrent=self.torrent1)
+        utorrent.download.assert_called_with(download)
+
+    def test_get_or_create(self, utorrent):
+        # Getting or creating a new torrent should trigger utorrent
+        download_1, created_1 = Download.objects.get_or_create(
+            torrent=self.torrent1)
+        self.assertTrue(created_1)
+        utorrent.download.assert_called_with(download_1)
+
+        download_2 = Download.objects.create(torrent=self.torrent2)
+
+        # Getting an existing download should return same download
+        utorrent.download.reset_mock()
+        download_3, created_3 = Download.objects.get_or_create(
+            torrent=self.torrent2)
+        self.assertFalse(created_3)
+        self.assertEqual(download_2, download_3)
+
+        # It should also NOT trigger a utorrent call
+        self.assertFalse(utorrent.download.called)
