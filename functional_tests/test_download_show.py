@@ -15,22 +15,6 @@ class DownloadShowTest(FunctionalTest):
         first_row = results.find_element_by_tag_name('tr')
         first_row.find_element_by_tag_name('a').click()
 
-    def check_setting(self, setting, value):
-        inputbox = self.browser.find_element_by_id(setting)
-        self.assertEqual(inputbox.get_attribute('value'), value)
-
-    def choose_setting(self, setting, label, default, value, password=False):
-        label_elem = self.browser.find_element_by_id(
-            '{}-label'.format(setting))
-        self.assertEqual(label_elem.text, label)
-        inputbox = self.browser.find_element_by_id(setting)
-        self.assertEqual(inputbox.get_attribute('value'), default)
-        inputbox.clear()
-        inputbox.send_keys(value)
-
-        if password:
-            self.assertEquals(inputbox.get_attribute('type'), 'password')
-
     def test_lookup_show(self):
         # User opens the site and sees the title 'Rook'
         self.assertIn('Rook', self.browser.title)
@@ -110,19 +94,12 @@ class DownloadShowTest(FunctionalTest):
         ut = ut_client.return_value
 
         # The user goes to settings to enter their utorrent settings
-        settings = self.browser.find_element_by_id('settings')
-        settings.click()
-        self.choose_setting('utorrent-host', 'uTorrent host', 'localhost:8080',
-                            ut_host)
-        self.choose_setting('utorrent-username', 'uTorrent username', 'admin',
-                            ut_user)
-        self.choose_setting('utorrent-password', 'uTorrent password', '',
-                            ut_pass, password=True)
-        self.browser.find_element_by_id('apply').click()
-
-        self.check_setting('utorrent-host', ut_host)
-        self.check_setting('utorrent-username', ut_user)
-        self.check_setting('utorrent-password', ut_pass)
+        self.go_to_settings()
+        self.choose_settings({
+            'utorrent-host': ut_host,
+            'utorrent-username': ut_user,
+            'utorrent-password': ut_pass,
+        })
 
         # The user wants to download an episode to their utorrent client
         self.search_first_result('the big bang theory')

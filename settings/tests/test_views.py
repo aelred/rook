@@ -3,6 +3,7 @@ from django.test import TestCase
 from unittest.mock import patch
 import shutil
 import os
+import urllib.error
 
 import settings.config
 import rook.startup
@@ -91,3 +92,16 @@ class TestSettingsView(TestCase):
         with open(settings.config.path()) as f:
             config = f.read()
         self.assertIn('host = localhost:9000', config)
+
+    def test_invalid_utorrent_host(self, utorrent_ui):
+        utorrent_ui.set_params.side_effect = urllib.error.URLError(None)
+        response = self.client.post('/settings', {'utorrent-host': 'whatev'})
+        self.assertIn('uTorrent connection failed', response.context['error'])
+
+    def test_invalid_utorrent_auth(self, utorrent_ui):
+        utorrent_ui.set_params.side_effect = urllib.error.HTTPError(
+            None, None, None, None, None
+        )
+        response = self.client.post('/settings', {'utorrent-host': 'whatev'})
+        self.assertIn('uTorrent authorization failed',
+                      response.context['error'])
