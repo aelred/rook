@@ -7,9 +7,6 @@ from rook.test_runner import webdriver
 
 class DownloadShowTest(StaticLiveServerTestCase):
 
-    def __init__(self, *args, **options):
-        super().__init__(*args, **options)
-
     def setUp(self):
         self.browser = webdriver()
         self.browser.implicitly_wait(3)
