@@ -1,20 +1,9 @@
-from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-
-from rook.test_runner import webdriver
+from .base import FunctionalTest
 
 
-class StyleTest(StaticLiveServerTestCase):
-
-    def setUp(self):
-        self.browser = webdriver()
-        self.browser.implicitly_wait(3)
-
-    def tearDown(self):
-        self.browser.quit()
+class StyleTest(FunctionalTest):
 
     def test_styling_applied(self):
-        self.browser.get(self.live_server_url)
-
         # The user sizes their window
         self.browser.set_window_size(1024, 768)
 

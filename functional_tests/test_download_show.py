@@ -1,18 +1,10 @@
-from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium.webdriver.common.keys import Keys
 from unittest.mock import patch, MagicMock
 
-from rook.test_runner import webdriver
+from .base import FunctionalTest
 
 
-class DownloadShowTest(StaticLiveServerTestCase):
-
-    def setUp(self):
-        self.browser = webdriver()
-        self.browser.implicitly_wait(3)
-
-    def tearDown(self):
-        self.browser.quit()
+class DownloadShowTest(FunctionalTest):
 
     def search_first_result(self, search_term):
         inputbox = self.browser.find_element_by_id('search')
@@ -41,7 +33,6 @@ class DownloadShowTest(StaticLiveServerTestCase):
 
     def test_lookup_show(self):
         # User opens the site and sees the title 'Rook'
-        self.browser.get(self.live_server_url)
         self.assertIn('Rook', self.browser.title)
         header_text = self.browser.find_element_by_tag_name('h1').text
         self.assertIn('Rook', header_text)
@@ -64,8 +55,6 @@ class DownloadShowTest(StaticLiveServerTestCase):
         self.assertIn('House of Cards (US)', [row.text for row in rows])
 
     def test_show_information(self):
-        self.browser.get(self.live_server_url)
-
         # The user searches for a new show she's heard of
         self.search_first_result('Game of Thrones')
 
@@ -90,8 +79,6 @@ class DownloadShowTest(StaticLiveServerTestCase):
         self.assertIn('9 - The Rains of Castamere', episode_titles)
 
     def test_episode_torrent_list(self):
-        self.browser.get(self.live_server_url)
-
         # The user searches for a show they want to find torrents for
         self.search_first_result('community')
 
@@ -115,8 +102,6 @@ class DownloadShowTest(StaticLiveServerTestCase):
 
     @patch('torrents.utorrent_ui.client.UTorrentClient')
     def test_utorrent_download(self, ut_client):
-        self.browser.get(self.live_server_url)
-
         # The user starts their utorrent client
         ut_host = '192.168.0.105:9876'
         ut_user = 'the_user'
