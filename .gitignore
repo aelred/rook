@@ -4,3 +4,5 @@
 .ropeproject
 db.sqlite3
 test.sh
+.coverage
+venv
