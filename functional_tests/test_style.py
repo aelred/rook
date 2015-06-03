@@ -1,11 +1,12 @@
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-from selenium import webdriver
+
+from rook.test_runner import webdriver
 
 
 class StyleTest(StaticLiveServerTestCase):
 
     def setUp(self):
-        self.browser = webdriver.PhantomJS()
+        self.browser = webdriver()
         self.browser.implicitly_wait(3)
 
     def tearDown(self):
