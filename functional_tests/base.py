@@ -1,6 +1,8 @@
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 
 import os
+import tempfile
+import shutil
 
 from rook.test_runner import webdriver
 import settings.config
@@ -14,11 +16,19 @@ class FunctionalTest(StaticLiveServerTestCase):
         os.remove(settings.config.path())
         rook.startup.run()
 
+        # create a directory for torrents to download to and for videos
+        self.torrents_dir = tempfile.mkdtemp()
+        self.videos_dir = tempfile.mkdtemp()
+
         self.browser = webdriver()
         self.browser.implicitly_wait(3)
         self.browser.get(self.live_server_url)
 
     def tearDown(self):
+        # delete temp directories
+        shutil.rmtree(self.torrents_dir)
+        shutil.rmtree(self.videos_dir)
+
         self.browser.quit()
 
     def go_to_settings(self):

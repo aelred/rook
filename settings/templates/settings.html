@@ -10,6 +10,13 @@
     {% csrf_token %}
     <table>
         <tr>
+            <td id="general-videos-label">Videos directory</td>
+            <td>
+                <input id="general-videos" name="general-videos"
+                       value="{{ general_videos }}"/>
+            </td>
+        </tr>
+        <tr>
             <td id="utorrent-host-label">uTorrent host</td>
             <td>
                 <input id="utorrent-host" name="utorrent-host" 

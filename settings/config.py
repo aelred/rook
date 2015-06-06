@@ -11,11 +11,14 @@ def path():
 config = configparser.ConfigParser()
 
 defaults = {
+    'general': {
+        'videos': '~/Videos',
+    },
     'utorrent': {
         'host': 'localhost:8080',
         'username': 'admin',
-        'password': ''
-    }
+        'password': '',
+    },
 }
 
 

@@ -25,6 +25,7 @@ class SettingsTest(FunctionalTest):
     def test_default_settings(self):
         self.go_to_settings()
 
+        self.check_setting('general-videos', '~/Videos', 'Videos directory')
         self.check_setting('utorrent-host', 'localhost:8080', 'uTorrent host')
         self.check_setting('utorrent-username', 'admin', 'uTorrent username')
         self.check_setting('utorrent-password', '', 'uTorrent password',

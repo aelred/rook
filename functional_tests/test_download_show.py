@@ -1,5 +1,6 @@
 from selenium.webdriver.common.keys import Keys
 from unittest.mock import patch, MagicMock
+import os
 
 from .base import FunctionalTest
 
@@ -86,16 +87,34 @@ class DownloadShowTest(FunctionalTest):
 
     @patch('torrents.utorrent_ui.client.UTorrentClient')
     def test_utorrent_download(self, ut_client):
-        # The user starts their utorrent client
         ut_host = '192.168.0.105:9876'
         ut_user = 'the_user'
         ut_pass = 'changeme'
+
+        # The user starts their utorrent client
         ut_client.return_value = MagicMock()
         ut = ut_client.return_value
+        fname = 'The Big Bang Theory S01E01.mkv'
+        fpath = os.path.join(self.torrents_dir, fname)
+
+        def addurl(url):
+            open(fpath, 'a').close()
+
+        ut.addurl.side_effect = addurl
+
+        started_status = 201
+
+        ut.list.return_value[1]['torrents'][0] = [
+            'thehash', started_status, 'the big bang theory S01E01', 100, 500,
+            50, 3171303424, 1000, 2000, 5, 0, 'BBT', 0, 0, 0, 0, 65536, -1, 0,
+            '', '', 'Downloading 50.0 %', '18', 1426286134, 1426286134, '',
+            fpath, 0, 'HAHAHA'
+        ]
 
         # The user goes to settings to enter their utorrent settings
         self.go_to_settings()
         self.choose_settings({
+            'general-videos': self.videos_dir,
             'utorrent-host': ut_host,
             'utorrent-username': ut_user,
             'utorrent-password': ut_pass,
@@ -103,7 +122,8 @@ class DownloadShowTest(FunctionalTest):
 
         # The user wants to download an episode to their utorrent client
         self.search_first_result('the big bang theory')
-        episode = self.browser.find_element_by_class_name('episode')
+        episodes = self.browser.find_elements_by_class_name('episode')
+        episode = next(e for e in episodes if e.text == '1 - Pilot')
         episode.find_element_by_tag_name('a').click()
 
         # The user enthusiastically selects the first torrent they see
@@ -114,3 +134,21 @@ class DownloadShowTest(FunctionalTest):
         ut_client.assert_called_with('http://{}/gui/'.format(ut_host),
                                      ut_user, ut_pass)
         self.assertTrue(ut.addurl.called)
+
+        # The user sees that the torrent is downloading in the download folder
+        self.assertEquals([fname], os.listdir(self.torrents_dir))
+
+        # The user looks in their videos directory and sees the download isn't
+        # done yet...
+        self.assertEquals(len(os.listdir(self.videos_dir)), 0)
+
+        # The download completes
+        ut.list.return_value[1]['torrents'][0][4] = 1000
+        ut.list.return_value[1]['torrents'][0][5] = 100
+
+        # The user looks at their videos directory again and sees the video is
+        # there!
+        self.assertEquals([fname], os.listdir(self.videos_dir))
+
+        # The user sees that the file is still in their torrents directory
+        self.assertEquals([fname], os.listdir(self.torrents_dir))

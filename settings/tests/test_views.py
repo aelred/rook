@@ -36,6 +36,8 @@ class TestSettingsView(TestCase):
         self.assertIn('host = localhost:8080\n', config)
         self.assertIn('username = admin\n', config)
         self.assertIn('password = \n', config)
+        self.assertIn('[general]\n', config)
+        self.assertIn('videos = ~/Videos\n', config)
 
     def test_read_settings(self, utorrent_ui):
         # create a settings file
