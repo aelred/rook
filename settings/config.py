@@ -2,11 +2,11 @@ import configparser
 import appdirs
 import os
 
-dir_ = appdirs.user_config_dir('rook')
+DIR = appdirs.user_config_dir('rook')
 
 
 def path():
-    return os.path.join(dir_, 'config.ini')
+    return os.path.join(DIR, 'config.ini')
 
 config = configparser.ConfigParser()
 
@@ -20,8 +20,8 @@ defaults = {
 
 
 def read():
-    if not os.path.exists(dir_):
-        os.makedirs(dir_)
+    if not os.path.exists(DIR):
+        os.makedirs(DIR)
 
     config.read_dict(defaults)
 
@@ -34,8 +34,8 @@ def read():
 
 
 def write():
-    if not os.path.exists(dir_):
-        os.makedirs(dir_)
+    if not os.path.exists(DIR):
+        os.makedirs(DIR)
 
     with open(path(), 'w+') as f:
         config.write(f)

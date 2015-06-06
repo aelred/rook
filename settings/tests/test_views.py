@@ -22,7 +22,7 @@ class TestSettingsView(TestCase):
 
     def setUp(self):
         # delete config folder like it's a fresh startup
-        shutil.rmtree(settings.config.dir_)
+        shutil.rmtree(settings.config.DIR)
         rook.startup.run()
 
     def test_settings_view(self, utorrent_ui):
@@ -39,8 +39,8 @@ class TestSettingsView(TestCase):
 
     def test_read_settings(self, utorrent_ui):
         # create a settings file
-        if not os.path.exists(settings.config.dir_):
-            os.makedirs(settings.config.dir_)
+        if not os.path.exists(settings.config.DIR):
+            os.makedirs(settings.config.DIR)
 
         with open(settings.config.path(), 'w+') as f:
             f.write('[utorrent]\n')
