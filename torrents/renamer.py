@@ -1,5 +1,7 @@
 import threading
 
+from torrents.models import Download
+
 INTERVAL = 60.0
 
 
@@ -9,4 +11,5 @@ def start_watch():
 
 
 def check_downloads():
-    pass
+    # Delete all completed downloads
+    Download.objects.filter(completed=True).delete()

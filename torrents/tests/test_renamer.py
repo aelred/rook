@@ -2,6 +2,7 @@ from django.test import TestCase
 
 from unittest.mock import patch
 
+import shows.tests.utils as utils
 from torrents import renamer
 from torrents.models import Torrent, Download
 
@@ -15,20 +16,22 @@ class TestRenamer(TestCase):
         timer.assert_called_with(renamer.INTERVAL, renamer.start_watch)
         check_downloads.assert_called_with()
 
-    def test_check_downloads(self):
-        torrent_1 = Torrent(episode=None, name='torrent 1')
-        download_1 = Download(torrent=torrent_1)
-        Download.objects.save(download_1)
-        torrent_2 = Torrent(episode=None, name='torrent 2')
-        download_2 = Download(torrent=torrent_2)
-        Download.objects.save(download_2)
+    @patch('torrents.models.utorrent')
+    def test_check_downloads(self, utorrent_ui):
+        episode_1 = utils.episode('Firefly', 1, 1, 'Serenity')
+        torrent_1 = Torrent.objects.create(
+            episode=episode_1, name='firefly s01e01.mkv', url='f1')
+        download_1 = Download.objects.create(torrent=torrent_1, completed=True)
+        download_1.full_clean()
 
-        with patch(download_1.status) as status_1:
-            with patch(download_2.status) as status_2:
-                status_1.return_value.completed = True
-                status_2.return_value.completed = False
+        episode_2 = utils.episode('Firefly', 1, 2, 'The Train Job')
+        torrent_2 = Torrent.objects.create(
+            episode=episode_2, name='Firefly 01x02 x264 BROWNSHIRTS', url='f2')
+        download_2 = Download.objects.create(torrent=torrent_2,
+                                             completed=False)
+        download_2.full_clean()
 
-                renamer.check_downloads()
+        renamer.check_downloads()
 
         # completed downloads should be removed
         self.assertNotIn(download_1, Download.objects.all())
