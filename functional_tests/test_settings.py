@@ -53,7 +53,7 @@ class SettingsTest(FunctionalTest):
     def test_invalid_utorrent_settings(self, ut_client):
 
         # set up mock uTorrent web UI login
-        def ut_cons(host, username, password):
+        def ut_cons(host, username, password, timeout):
             if host != 'http://192.168.0.240:1234/gui/':
                 raise urllib.error.URLError(None)
             if username != 'admin' or password != 'secret':

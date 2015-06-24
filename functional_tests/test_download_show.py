@@ -132,7 +132,7 @@ class DownloadShowTest(FunctionalTest):
 
         # The user notices that uTorrent has added the torrent they selected
         ut_client.assert_called_with('http://{}/gui/'.format(ut_host),
-                                     ut_user, ut_pass)
+                                     ut_user, ut_pass, timeout=1)
         self.assertTrue(ut.addurl.called)
 
         # The user sees that the torrent is downloading in the download folder
