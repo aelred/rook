@@ -42,4 +42,4 @@ class TorrentViewTest(TestCase):
         self.assertEqual(download.torrent, torrent)
 
         # Make sure the torrent was added to utorrent
-        utorrent.download.assert_called_with(download)
+        utorrent.download.assert_called_with(torrent)

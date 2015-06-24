@@ -27,17 +27,17 @@ class Torrent(models.Model):
 
 class DownloadManager(models.Manager):
 
-    def get_or_create(self, *args, **kwargs):
-        download, created = super().get_or_create(*args, **kwargs)
-        if created:
-            utorrent.download(download)
-        return download, created
+    def get_or_create(self, *args, torrent=None, **kwargs):
+        try:
+            return Download.objects.get(torrent=torrent), False
+        except Download.DoesNotExist:
+            return (Download.objects.create(*args, torrent=torrent, **kwargs),
+                    True)
 
-    def create(self, *args, **kwargs):
-        download = Download(*args, **kwargs)
-        download.utorrent_hash = utorrent.download(download)
-        download.save(force_insert=True)
-        return download
+    def create(self, *args, torrent=None, **kwargs):
+        utorrent_hash = utorrent.download(torrent)
+        return super().create(*args, torrent=torrent,
+                              utorrent_hash=utorrent_hash, **kwargs)
 
 
 class Download(models.Model):

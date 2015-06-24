@@ -51,7 +51,7 @@ class TestUTorrent(TestCase):
     @patch('torrents.utorrent_ui.ut_client')
     def test_download(self, ut_client):
         ut_client.list.return_value = UT_LIST
-        new_hash = torrents.utorrent_ui.download(self.down_1)
+        new_hash = torrents.utorrent_ui.download(self.down_1.torrent)
         self.assertEqual(new_hash, self.down_1.utorrent_hash)
         ut_client.addurl.assert_called_with('a url')
 
