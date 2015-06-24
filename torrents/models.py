@@ -44,3 +44,4 @@ class Download(models.Model):
     objects = DownloadManager()
 
     torrent = models.OneToOneField(Torrent)
+    completed = models.BooleanField(default=False)

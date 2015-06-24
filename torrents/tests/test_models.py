@@ -75,6 +75,7 @@ class DownloadModelTest(TestCase):
         # Creating a download should trigger a utorrent call
         download = Download.objects.create(torrent=self.torrent1)
         utorrent.download.assert_called_with(download)
+        self.assertFalse(download.completed)
 
     def test_get_or_create(self, utorrent):
         # Getting or creating a new torrent should trigger utorrent
