@@ -104,13 +104,6 @@ class DownloadShowTest(FunctionalTest):
 
         started_status = 201
 
-        ut.list.return_value[1]['torrents'][0] = [
-            'thehash', started_status, 'the big bang theory S01E01', 100, 500,
-            50, 3171303424, 1000, 2000, 5, 0, 'BBT', 0, 0, 0, 0, 65536, -1, 0,
-            '', '', 'Downloading 50.0 %', '18', 1426286134, 1426286134, '',
-            fpath, 0, 'HAHAHA'
-        ]
-
         # The user goes to settings to enter their utorrent settings
         self.go_to_settings()
         self.choose_settings({
@@ -128,6 +121,19 @@ class DownloadShowTest(FunctionalTest):
 
         # The user enthusiastically selects the first torrent they see
         torrent = self.browser.find_element_by_class_name('torrent')
+
+        ut.list.return_value = (
+            200,
+            {
+                'torrents': [[
+                    'thehash', started_status, torrent.text, 100, 500, 50,
+                    3171303424, 1000, 2000, 5, 0, 'BBT', 0, 0, 0, 0, 65536, -1,
+                    0, '', '', 'Downloading 50.0 %', '18', 1426286134,
+                    1426286134, '', fpath, 0, 'HAHAHA'
+                ]]
+            }
+        )
+
         torrent.find_element_by_tag_name('a').click()
 
         # The user notices that uTorrent has added the torrent they selected
