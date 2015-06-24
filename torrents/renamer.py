@@ -11,5 +11,8 @@ def start_watch():
 
 
 def check_downloads():
-    # Delete all completed downloads
-    Download.objects.filter(completed=True).delete()
+    # Delete all completed downloads - done individually because 'completed'
+    # is a property, not a database field.
+    for download in Download.objects.all():
+        if download.completed:
+            download.delete()

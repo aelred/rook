@@ -21,15 +21,18 @@ class TestRenamer(TestCase):
         episode_1 = utils.episode('Firefly', 1, 1, 'Serenity')
         torrent_1 = Torrent.objects.create(
             episode=episode_1, name='firefly s01e01.mkv', url='f1')
-        download_1 = Download.objects.create(torrent=torrent_1, completed=True)
+        download_1 = Download.objects.create(torrent=torrent_1)
         download_1.full_clean()
 
         episode_2 = utils.episode('Firefly', 1, 2, 'The Train Job')
         torrent_2 = Torrent.objects.create(
             episode=episode_2, name='Firefly 01x02 x264 BROWNSHIRTS', url='f2')
-        download_2 = Download.objects.create(torrent=torrent_2,
-                                             completed=False)
+        download_2 = Download.objects.create(torrent=torrent_2)
         download_2.full_clean()
+
+        def get_completed(d):
+            return {download_1: True, download_2: False}[d]
+        utorrent_ui.get_completed = get_completed
 
         renamer.check_downloads()
 
