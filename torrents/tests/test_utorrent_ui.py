@@ -21,7 +21,7 @@ UT_LIST = (
             ],
             [
                 'BA9FFD0202F6A101376D9163CA7FB9D474DEA8AC', 201,
-                '[ChoeyXD] One Piece 355 (Dual Audio) [278F9B0B].mkv',
+                '[ChoeyXD] One Piece 355 (Dual Audio).mkv',
                 430939486, 9, 3997696, 0, 0, 819, 481801, 23941076, 'video',
                 0, 2, 3, 3, 196608, 1, 426941790, '', '', 'Downloading 0.9 %',
                 'f', 1435173243, 0, '', 'D:\\Torrents', 0, '1E9F6125'
@@ -37,16 +37,22 @@ UT_LIST = (
 class TestUTorrent(TestCase):
 
     def setUp(self):
-        self.down_1 = Mock()
-        self.down_1.utorrent_hash = '028ADCDD7A96F7F151BC0FB618E0777E2B2F69F9'
-        self.down_2 = Mock()
-        self.down_2.utorrent_hash = 'BA9FFD0202F6A101376D9163CA7FB9D474DEA8AC'
+        self.down_1 = Mock(
+            utorrent_hash='028ADCDD7A96F7F151BC0FB618E0777E2B2F69F9',
+        )
+        self.down_1.torrent.name = 'Firefly.2002.01x03.x264-BLOW'
+        self.down_1.torrent.url = 'a url'
+
+        self.down_2 = Mock(
+            utorrent_hash='BA9FFD0202F6A101376D9163CA7FB9D474DEA8AC',
+        )
+        self.down_2.torrent.name = '[ChoeyXD] One Piece 355 (Dual Audio).mkv'
 
     @patch('torrents.utorrent_ui.ut_client')
     def test_download(self, ut_client):
-        download = Mock()
-        download.torrent.url = 'a url'
-        torrents.utorrent_ui.download(download)
+        ut_client.list.return_value = UT_LIST
+        new_hash = torrents.utorrent_ui.download(self.down_1)
+        self.assertEqual(new_hash, self.down_1.utorrent_hash)
         ut_client.addurl.assert_called_with('a url')
 
     @patch('torrents.utorrent_ui.client.UTorrentClient')

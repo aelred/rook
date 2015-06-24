@@ -18,6 +18,8 @@ class TestRenamer(TestCase):
 
     @patch('torrents.models.utorrent')
     def test_check_downloads(self, utorrent_ui):
+        utorrent_ui.download.return_value = 'my hash'
+
         episode_1 = utils.episode('Firefly', 1, 1, 'Serenity')
         torrent_1 = Torrent.objects.create(
             episode=episode_1, name='firefly s01e01.mkv', url='f1')

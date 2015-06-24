@@ -34,8 +34,9 @@ class DownloadManager(models.Manager):
         return download, created
 
     def create(self, *args, **kwargs):
-        download = super().create(*args, **kwargs)
-        utorrent.download(download)
+        download = Download(*args, **kwargs)
+        download.utorrent_hash = utorrent.download(download)
+        download.save(force_insert=True)
         return download
 
 
@@ -44,6 +45,7 @@ class Download(models.Model):
     objects = DownloadManager()
 
     torrent = models.OneToOneField(Torrent)
+    utorrent_hash = models.CharField(max_length=40)
 
     @property
     def completed(self):

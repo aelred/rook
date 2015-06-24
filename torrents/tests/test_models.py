@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.core.exceptions import ValidationError
 
 import itertools
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 
 from shows.models import Show, Season, Episode
 from torrents.models import Torrent, Download
@@ -46,7 +46,7 @@ class TorrentModelTest(TestCase):
             Torrent(episode=self.episode_2, name='a', url='0').full_clean()
 
 
-@patch('torrents.models.utorrent')
+@patch('torrents.models.utorrent', download=Mock(return_value='my hash'))
 class DownloadModelTest(TestCase):
 
     def setUp(self):
@@ -75,6 +75,10 @@ class DownloadModelTest(TestCase):
         # Creating a download should trigger a utorrent call
         download = Download.objects.create(torrent=self.torrent1)
         utorrent.download.assert_called_with(download)
+
+    def test_utorrent_hash(self, utorrent):
+        download = Download.objects.create(torrent=self.torrent1)
+        self.assertEquals(download.utorrent_hash, 'my hash')
 
     def test_completed(self, utorrent):
         download = Download.objects.create(torrent=self.torrent1)
