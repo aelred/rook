@@ -2,6 +2,8 @@ import configparser
 import appdirs
 import os
 
+from torrents import utorrent_ui
+
 DIR = appdirs.user_config_dir('rook')
 
 
@@ -34,6 +36,8 @@ def read():
     except FileNotFoundError:
         # create new config file with default settings
         write()
+    else:
+        update()
 
 
 def write():
@@ -42,3 +46,9 @@ def write():
 
     with open(path(), 'w+') as f:
         config.write(f)
+
+    update()
+
+
+def update():
+    utorrent_ui.set_params(**config['utorrent'])

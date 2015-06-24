@@ -3,7 +3,6 @@ from django.views.generic import View
 from django.core.urlresolvers import reverse
 
 import settings.config as config
-from torrents import utorrent_ui
 
 import urllib.error
 
@@ -41,11 +40,8 @@ class Settings(View):
                 config.config[section][key] = value
 
         # write config to file
-        config.write()
-
-        # update uTorrent parameters
         try:
-            utorrent_ui.set_params(**config.config['utorrent'])
+            config.write()
         except urllib.error.HTTPError:
             # Invalid uTorrent credentials
             context = self.context()

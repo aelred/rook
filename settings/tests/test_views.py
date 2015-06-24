@@ -9,7 +9,7 @@ import settings.config
 import rook.startup
 
 
-@patch('settings.views.utorrent_ui')
+@patch('settings.config.utorrent_ui')
 class TestSettingsView(TestCase):
 
     test_config = {

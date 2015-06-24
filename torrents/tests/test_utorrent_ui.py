@@ -18,5 +18,6 @@ class TestUTorrent(TestCase):
     def test_set_params(self, client):
         old_client = torrents.utorrent_ui.ut_client
         torrents.utorrent_ui.set_params('1.2.3.4:8', 'me', 'not telling')
-        client.assert_called_with('http://1.2.3.4:8/gui/', 'me', 'not telling')
+        client.assert_called_with('http://1.2.3.4:8/gui/', 'me', 'not telling',
+                                  timeout=1)
         self.assertNotEqual(old_client, torrents.utorrent_ui.ut_client)
