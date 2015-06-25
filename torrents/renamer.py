@@ -27,3 +27,5 @@ def check_downloads():
     for download in Download.objects.all():
         if download.completed:
             download.delete()
+
+start_watch()
