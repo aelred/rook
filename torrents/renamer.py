@@ -9,19 +9,34 @@ INTERVAL = 60.0
 
 watch_started = False
 
+timer = None
+
 
 def start_watch():
     global watch_started
 
     if not watch_started:
         watch_started = True
-        threading.Timer(INTERVAL, _repeat_watch)
+        global timer
+        timer = threading.Timer(INTERVAL, _repeat_watch)
+        timer.start()
         check_downloads()
 
 
 def _repeat_watch():
-    threading.Timer(INTERVAL, _repeat_watch)
+    global timer
+    timer = threading.Timer(INTERVAL, _repeat_watch)
+    timer.start()
     check_downloads()
+
+
+def cancel_watch():
+    global watch_started
+    global timer
+    if timer is not None:
+        timer.cancel()
+        timer = None
+    watch_started = False
 
 
 def check_downloads():

@@ -18,6 +18,8 @@ class TestRenamer(TestCase):
         self.assertFalse(renamer.watch_started)
         renamer.start_watch()
         timer.assert_called_with(renamer.INTERVAL, renamer._repeat_watch)
+        timer.return_value.start.assert_called_with()
+        self.assertEqual(renamer.timer, timer.return_value)
         check_downloads.assert_called_with()
         self.assertTrue(renamer.watch_started)
 
@@ -39,8 +41,23 @@ class TestRenamer(TestCase):
         renamer.watch_started = True
         renamer._repeat_watch()
         timer.assert_called_with(renamer.INTERVAL, renamer._repeat_watch)
+        timer.return_value.start.assert_called_with()
+        self.assertEqual(renamer.timer, timer.return_value)
         check_downloads.assert_called_with()
         self.assertTrue(renamer.watch_started)
+
+    @patch('torrents.renamer.threading.Timer')
+    def test_cancel_watch(self, timer):
+        # test cancelling before starting...
+        renamer.cancel_watch()
+        self.assertFalse(renamer.watch_started)
+        self.assertIsNone(renamer.timer)
+        # ...and after
+        renamer.start_watch()
+        renamer.cancel_watch()
+        self.assertFalse(renamer.watch_started)
+        self.assertIsNone(renamer.timer)
+        timer.return_value.cancel.assert_called_with()
 
     def make_downloads(self, utorrent_ui):
         utorrent_ui.download.return_value = 'my hash'
