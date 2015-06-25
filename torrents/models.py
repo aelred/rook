@@ -24,6 +24,10 @@ class Torrent(models.Model):
     # this is not a URLField, to support magnet links
     url = models.TextField(unique=True)
 
+    def __repr__(self):
+        return 'Torrent(episode={}, name={}, url={})'.format(
+            repr(self.episode), repr(self.name), repr(self.url))
+
 
 class DownloadManager(models.Manager):
 
@@ -50,3 +54,11 @@ class Download(models.Model):
     @property
     def completed(self):
         return utorrent.get_completed(self)
+
+    @property
+    def files(self):
+        return utorrent.get_files(self)
+
+    def __repr__(self):
+        return 'Download(torrent={}, utorrent_hash={})'.format(
+            repr(self.torrent), repr(self.utorrent_hash))

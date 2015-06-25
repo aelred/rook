@@ -87,6 +87,11 @@ class DownloadModelTest(TestCase):
         utorrent.get_completed.return_value = True
         self.assertTrue(download.completed)
 
+    def test_files(self, utorrent):
+        download = Download.objects.create(torrent=self.torrent1)
+        utorrent.get_files.return_value = ['hi']
+        self.assertEquals(download.files, ['hi'])
+
     def test_get_or_create(self, utorrent):
         # Getting or creating a new torrent should trigger utorrent
         download_1, created_1 = Download.objects.get_or_create(

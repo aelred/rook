@@ -42,8 +42,7 @@ class TestRenamer(TestCase):
         check_downloads.assert_called_with()
         self.assertTrue(renamer.watch_started)
 
-    @patch('torrents.models.utorrent')
-    def test_check_downloads(self, utorrent_ui):
+    def make_downloads(self, utorrent_ui):
         utorrent_ui.download.return_value = 'my hash'
 
         episode_1 = utils.episode('Firefly', 1, 1, 'Serenity')
@@ -62,8 +61,23 @@ class TestRenamer(TestCase):
             return {download_1: True, download_2: False}[d]
         utorrent_ui.get_completed = get_completed
 
-        renamer.check_downloads()
+        return download_1, download_2
 
-        # completed downloads should be removed
+    @patch('torrents.renamer.rename_download')
+    @patch('torrents.models.utorrent')
+    def test_check_downloads(self, utorrent_ui, rename_download):
+        download_1, download_2 = self.make_downloads(utorrent_ui)
+        renamer.check_downloads()
         self.assertNotIn(download_1, Download.objects.all())
         self.assertIn(download_2, Download.objects.all())
+        self.assertEquals(rename_download.call_count, 1)
+
+    @patch('torrents.renamer.shutil.copyfile')
+    @patch('torrents.models.utorrent')
+    def test_rename_download(self, utorrent_ui, copyfile):
+        utorrent_ui.get_files.return_value = ['~/Downloads/firefly s01e01.mkv']
+        download_1, download_2 = self.make_downloads(utorrent_ui)
+        renamer.rename_download(download_1)
+        copyfile.assert_called_with(
+            '~/Downloads/firefly s01e01.mkv',
+            '~/Videos/Firefly/Firefly - S01E01 - Serenity.mkv')
