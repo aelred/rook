@@ -23,7 +23,6 @@ def start_watch():
         global timer
         timer = threading.Timer(INTERVAL, _repeat_watch)
         timer.start()
-        check_downloads()
 
 
 def _repeat_watch():

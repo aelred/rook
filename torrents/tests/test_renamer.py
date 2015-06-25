@@ -20,7 +20,7 @@ class TestRenamer(TestCase):
         timer.assert_called_with(renamer.INTERVAL, renamer._repeat_watch)
         timer.return_value.start.assert_called_with()
         self.assertEqual(renamer.timer, timer.return_value)
-        check_downloads.assert_called_with()
+        self.assertFalse(check_downloads.called)
         self.assertTrue(renamer.watch_started)
 
     @patch('torrents.renamer.threading.Timer')
@@ -29,10 +29,8 @@ class TestRenamer(TestCase):
         # starting the watch twice will not cause it to check or schedule
         renamer.start_watch()
         timer.reset_mock()
-        check_downloads.reset_mock()
         renamer.start_watch()
         self.assertFalse(timer.called)
-        self.assertFalse(check_downloads.called)
         self.assertTrue(renamer.watch_started)
 
     @patch('torrents.renamer.threading.Timer')

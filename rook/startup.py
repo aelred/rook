@@ -1,5 +1,4 @@
 import urllib
-import django
 
 import settings.config
 import torrents.renamer
@@ -16,5 +15,4 @@ def run():
         # Invalid uTorrent host
         pass
 
-    django.setup()
     torrents.renamer.start_watch()
