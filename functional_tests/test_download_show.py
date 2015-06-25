@@ -30,14 +30,14 @@ class DownloadShowTest(FunctionalTest):
         )
 
         # The user inputs her favourite show in the box and hits enter
-        inputbox.send_keys('House')
+        inputbox.send_keys('Doctor Who')
         inputbox.send_keys(Keys.ENTER)
 
         # The page now lists the show she was searching for and similar shows
         results = self.browser.find_element_by_id('search_results')
         rows = results.find_elements_by_tag_name('tr')
-        self.assertIn('House', [row.text for row in rows])
-        self.assertIn('House of Cards (US)', [row.text for row in rows])
+        self.assertIn('Doctor Who', [row.text for row in rows])
+        self.assertIn('Doctor Who (2005)', [row.text for row in rows])
 
     def test_show_information(self):
         # The user searches for a new show she's heard of
