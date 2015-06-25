@@ -70,5 +70,3 @@ def rename_download(download):
         dest = os.path.join(dest_folder, name) + ext
         logger.info('copying {} to {}'.format(source, dest))
         shutil.copyfile(source, dest)
-
-start_watch()

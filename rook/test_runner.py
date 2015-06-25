@@ -53,8 +53,8 @@ class TestRunner(django.test.runner.DiscoverRunner):
         settings.config.DIR = self.prev_cfg
         torrents.renamer.INTERVAL = self.prev_interval
 
-        # stop renamer
-        torrents.renamer.cancel_watch()
-
         # read in old config
         rook.startup.run()
+
+        # stop renamer
+        torrents.renamer.cancel_watch()

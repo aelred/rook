@@ -8,6 +8,8 @@ import rook.startup
 class TestStartup(TestCase):
 
     @patch('rook.startup.settings.config.read')
-    def test_run(self, read_func):
+    @patch('rook.startup.torrents.renamer.start_watch')
+    def test_run(self, start_watch, read_func):
         rook.startup.run()
         read_func.assert_called_once_with()
+        start_watch.assert_called_once_with()
