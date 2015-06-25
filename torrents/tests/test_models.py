@@ -73,7 +73,7 @@ class DownloadModelTest(TestCase):
 
     def test_create(self, utorrent):
         # Creating a download should trigger a utorrent call
-        download = Download.objects.create(torrent=self.torrent1)
+        Download.objects.create(torrent=self.torrent1)
         utorrent.download.assert_called_with(self.torrent1)
 
     def test_utorrent_hash(self, utorrent):
