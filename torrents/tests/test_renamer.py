@@ -15,10 +15,12 @@ class TestRenamer(TestCase):
     @patch('torrents.renamer.threading.Timer')
     @patch('torrents.renamer.check_downloads')
     def test_start_watch(self, check_downloads, timer):
+        timer.return_value.daemon = False
         self.assertFalse(renamer.watch_started)
         renamer.start_watch()
         timer.assert_called_with(renamer.INTERVAL, renamer._repeat_watch)
         timer.return_value.start.assert_called_with()
+        self.assertTrue(timer.return_value.daemon)
         self.assertEqual(renamer.timer, timer.return_value)
         self.assertFalse(check_downloads.called)
         self.assertTrue(renamer.watch_started)
@@ -36,10 +38,12 @@ class TestRenamer(TestCase):
     @patch('torrents.renamer.threading.Timer')
     @patch('torrents.renamer.check_downloads')
     def test_repeat_watch(self, check_downloads, timer):
+        timer.return_value.daemon = False
         renamer.watch_started = True
         renamer._repeat_watch()
         timer.assert_called_with(renamer.INTERVAL, renamer._repeat_watch)
         timer.return_value.start.assert_called_with()
+        self.assertTrue(timer.return_value.daemon)
         self.assertEqual(renamer.timer, timer.return_value)
         check_downloads.assert_called_with()
         self.assertTrue(renamer.watch_started)
@@ -78,14 +82,16 @@ class TestRenamer(TestCase):
 
         return download_1, download_2
 
-    @patch('torrents.renamer.rename_download')
+    @patch('torrents.renamer.threading.Thread')
     @patch('torrents.models.utorrent')
-    def test_check_downloads(self, utorrent_ui, rename_download):
+    def test_check_downloads(self, utorrent_ui, thread):
         download_1, download_2 = self.make_downloads(utorrent_ui)
+        thread.return_value.daemon = True
         renamer.check_downloads()
-        self.assertNotIn(download_1, Download.objects.all())
-        self.assertIn(download_2, Download.objects.all())
-        self.assertEquals(rename_download.call_count, 1)
+        thread.assert_called_once_with(target=renamer.rename_download,
+                                       args=(download_1,))
+        self.assertFalse(thread.return_value.daemon)
+        thread.return_value.start.assert_called_with()
 
     @patch('torrents.renamer.os.makedirs')
     @patch('torrents.renamer.os.path.exists')
@@ -100,6 +106,7 @@ class TestRenamer(TestCase):
         copyfile.assert_called_with(
             '~/Downloads/firefly s01e01.mkv',
             '~/Videos/Firefly/Firefly - S01E01 - Serenity.mkv')
+        self.assertNotIn(download_1, Download.objects.all())
 
     @patch('torrents.renamer.os.makedirs')
     @patch('torrents.renamer.os.path.exists')

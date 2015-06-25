@@ -22,12 +22,14 @@ def start_watch():
         watch_started = True
         global timer
         timer = threading.Timer(INTERVAL, _repeat_watch)
+        timer.daemon = True
         timer.start()
 
 
 def _repeat_watch():
     global timer
     timer = threading.Timer(INTERVAL, _repeat_watch)
+    timer.daemon = True
     timer.start()
     check_downloads()
 
@@ -47,8 +49,10 @@ def check_downloads():
     for download in Download.objects.all():
         if download.completed:
             logger.info('completed download found: {!r}'.format(download))
-            rename_download(download)
-            download.delete()
+            # create a non-daemon thread so will not get terminated
+            thread = threading.Thread(target=rename_download, args=(download,))
+            thread.daemon = False
+            thread.start()
 
 
 def rename_download(download):
@@ -69,3 +73,5 @@ def rename_download(download):
         dest = os.path.join(dest_folder, name) + ext
         logger.info('copying {} to {}'.format(source, dest))
         shutil.copyfile(source, dest)
+
+    download.delete()
