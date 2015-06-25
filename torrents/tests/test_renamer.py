@@ -89,12 +89,31 @@ class TestRenamer(TestCase):
         self.assertIn(download_2, Download.objects.all())
         self.assertEquals(rename_download.call_count, 1)
 
+    @patch('torrents.renamer.os.makedirs')
+    @patch('torrents.renamer.os.path.exists')
     @patch('torrents.renamer.shutil.copyfile')
     @patch('torrents.models.utorrent')
-    def test_rename_download(self, utorrent_ui, copyfile):
+    def test_rename_download(self, utorrent_ui, copyfile, exists, makedirs):
         utorrent_ui.get_files.return_value = ['~/Downloads/firefly s01e01.mkv']
+        exists.return_value = True
         download_1, download_2 = self.make_downloads(utorrent_ui)
         renamer.rename_download(download_1)
+        self.assertFalse(makedirs.called)
+        copyfile.assert_called_with(
+            '~/Downloads/firefly s01e01.mkv',
+            '~/Videos/Firefly/Firefly - S01E01 - Serenity.mkv')
+
+    @patch('torrents.renamer.os.makedirs')
+    @patch('torrents.renamer.os.path.exists')
+    @patch('torrents.renamer.shutil.copyfile')
+    @patch('torrents.models.utorrent')
+    def test_rename_download_make_dir(self, utorrent_ui, copyfile, exists,
+                                      makedirs):
+        utorrent_ui.get_files.return_value = ['~/Downloads/firefly s01e01.mkv']
+        exists.return_value = False
+        download_1, download_2 = self.make_downloads(utorrent_ui)
+        renamer.rename_download(download_1)
+        makedirs.assert_called_with('~/Videos/Firefly')
         copyfile.assert_called_with(
             '~/Downloads/firefly s01e01.mkv',
             '~/Videos/Firefly/Firefly - S01E01 - Serenity.mkv')
