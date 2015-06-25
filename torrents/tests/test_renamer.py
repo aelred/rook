@@ -9,12 +9,38 @@ from torrents.models import Torrent, Download
 
 class TestRenamer(TestCase):
 
+    def tearDown(self):
+        renamer.watch_started = False
+
     @patch('torrents.renamer.threading.Timer')
     @patch('torrents.renamer.check_downloads')
     def test_start_watch(self, check_downloads, timer):
+        self.assertFalse(renamer.watch_started)
         renamer.start_watch()
-        timer.assert_called_with(renamer.INTERVAL, renamer.start_watch)
+        timer.assert_called_with(renamer.INTERVAL, renamer._repeat_watch)
         check_downloads.assert_called_with()
+        self.assertTrue(renamer.watch_started)
+
+    @patch('torrents.renamer.threading.Timer')
+    @patch('torrents.renamer.check_downloads')
+    def test_start_watch_twice(self, check_downloads, timer):
+        # starting the watch twice will not cause it to check or schedule
+        renamer.start_watch()
+        timer.reset_mock()
+        check_downloads.reset_mock()
+        renamer.start_watch()
+        self.assertFalse(timer.called)
+        self.assertFalse(check_downloads.called)
+        self.assertTrue(renamer.watch_started)
+
+    @patch('torrents.renamer.threading.Timer')
+    @patch('torrents.renamer.check_downloads')
+    def test_repeat_watch(self, check_downloads, timer):
+        renamer.watch_started = True
+        renamer._repeat_watch()
+        timer.assert_called_with(renamer.INTERVAL, renamer._repeat_watch)
+        check_downloads.assert_called_with()
+        self.assertTrue(renamer.watch_started)
 
     @patch('torrents.models.utorrent')
     def test_check_downloads(self, utorrent_ui):

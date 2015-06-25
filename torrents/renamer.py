@@ -4,9 +4,20 @@ from torrents.models import Download
 
 INTERVAL = 60.0
 
+watch_started = False
+
 
 def start_watch():
-    threading.Timer(INTERVAL, start_watch)
+    global watch_started
+
+    if not watch_started:
+        watch_started = True
+        threading.Timer(INTERVAL, _repeat_watch)
+        check_downloads()
+
+
+def _repeat_watch():
+    threading.Timer(INTERVAL, _repeat_watch)
     check_downloads()
 
 
