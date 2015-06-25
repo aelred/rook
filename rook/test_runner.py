@@ -6,6 +6,7 @@ import shutil
 
 import settings.config
 import rook.startup
+import torrents.renamer
 
 webdriver = None
 
@@ -35,6 +36,10 @@ class TestRunner(django.test.runner.DiscoverRunner):
         self.prev_cfg = settings.config.DIR
         settings.config.DIR = tempfile.mkdtemp()
 
+        # make renamer run much more frequently
+        self.prev_interval = torrents.renamer.INTERVAL
+        torrents.renamer.INTERVAL = 0.1
+
         # make sure config is read in
         rook.startup.run()
 
@@ -44,8 +49,12 @@ class TestRunner(django.test.runner.DiscoverRunner):
         # delete temporary folder
         shutil.rmtree(settings.config.DIR)
 
-        # point back to original config folder
+        # reset all variables
         settings.config.DIR = self.prev_cfg
+        torrents.renamer.INTERVAL = self.prev_interval
+
+        # stop renamer
+        torrents.renamer.cancel_watch()
 
         # read in old config
         rook.startup.run()

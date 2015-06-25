@@ -7,6 +7,7 @@ import shutil
 from rook.test_runner import webdriver
 import settings.config
 import rook.startup
+import torrents.renamer
 
 
 class FunctionalTest(StaticLiveServerTestCase):
@@ -23,6 +24,10 @@ class FunctionalTest(StaticLiveServerTestCase):
         self.browser = webdriver()
         self.browser.implicitly_wait(3)
         self.browser.get(self.live_server_url)
+
+        # make sure renamer is running with faster settings
+        torrents.renamer.cancel_watch()
+        torrents.renamer.start_watch()
 
     def tearDown(self):
         # delete temp directories
