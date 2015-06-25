@@ -1,6 +1,7 @@
 from selenium.webdriver.common.keys import Keys
 from unittest.mock import patch, MagicMock
 import os
+import time
 
 from .base import FunctionalTest
 
@@ -98,8 +99,8 @@ class DownloadShowTest(FunctionalTest):
         fpath = os.path.join(self.torrents_dir, fname)
 
         def addurl(url):
-            open(fpath, 'a').close()
-
+            with open(fpath, 'a') as f:
+                f.write('<VIDEO DATA HERE>')
         ut.addurl.side_effect = addurl
 
         started_status = 201
@@ -129,8 +130,24 @@ class DownloadShowTest(FunctionalTest):
                     'thehash', started_status, torrent.text, 100, 500, 50,
                     3171303424, 1000, 2000, 5, 0, 'BBT', 0, 0, 0, 0, 65536, -1,
                     0, '', '', 'Downloading 50.0 %', '18', 1426286134,
-                    1426286134, '', fpath, 0, 'HAHAHA'
+                    1426286134, '', self.torrents_dir, 0, 'HAHAHA'
                 ]]
+            }
+        )
+
+        ut.getfiles.return_value = (
+            200,
+            {
+                'files': [
+                    'something',
+                    [
+                        [
+                            fname, 100000000, 100000000, 2, 86, 96, False,
+                            -1, -1, -1, -1, -1
+                        ],
+                    ]
+                ],
+                'build': 31466
             }
         )
 
@@ -151,10 +168,24 @@ class DownloadShowTest(FunctionalTest):
         # The download completes
         ut.list.return_value[1]['torrents'][0][4] = 1000
         ut.list.return_value[1]['torrents'][0][5] = 100
+        time.sleep(0.5)
 
-        # The user looks at their videos directory again and sees the video is
-        # there!
-        self.assertEquals([fname], os.listdir(self.videos_dir))
+        # The user looks at their videos directory again and sees a new folder!
+        self.assertEquals(['The Big Bang Theory'], os.listdir(self.videos_dir))
+
+        # Inside the folder is the downloaded video
+        self.assertEquals(
+            ['The Big Bang Theory - S01E01 - Pilot.mkv'],
+            os.listdir(os.path.join(self.videos_dir, 'The Big Bang Theory')))
 
         # The user sees that the file is still in their torrents directory
         self.assertEquals([fname], os.listdir(self.torrents_dir))
+
+        # The user checks both files plays correctly (the contents is right)
+        with open(os.path.join(self.videos_dir, 'The Big Bang Theory',
+                               'The Big Bang Theory - S01E01 - Pilot.mkv'),
+                  'r') as f:
+            self.assertEquals(f.read(), '<VIDEO DATA HERE>')
+
+        with open(fpath, 'r') as f:
+            self.assertEquals(f.read(), '<VIDEO DATA HERE>')
