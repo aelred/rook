@@ -98,17 +98,35 @@ TEMPLATE_DIRS = (os.path.join(BASE_DIR, 'templates'),)
 TEST_RUNNER = 'rook.test_runner.TestRunner'
 
 
+import appdirs
+
+log_dir = appdirs.user_log_dir('rook')
+
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir)
+
+
 LOGGING = {
     'version': 1,
     'handlers': {
         'console': {
-            'level': 'DEBUG',
+            'level': 'WARNING',
             'class': 'logging.StreamHandler',
         },
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(log_dir, 'log.txt')
+        }
     },
     'loggers': {
         'django.request': {
-            'handlers': ['console'],
+            'handlers': ['console', 'file'],
+            'propagate': True,
+            'level': 'DEBUG',
+        },
+        'torrents': {
+            'handlers': ['console', 'file'],
             'propagate': True,
             'level': 'DEBUG',
         }
