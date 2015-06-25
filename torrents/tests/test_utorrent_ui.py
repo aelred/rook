@@ -1,6 +1,7 @@
 from django.test import TestCase
 
 from unittest.mock import patch, Mock
+import os
 
 import torrents.utorrent_ui
 
@@ -30,6 +31,26 @@ UT_LIST = (
         'rssfeeds': [],
         'build': 31466,
         'rssfilters': []
+    }
+)
+
+UT_FILES = (
+    200,
+    {
+        'files': [
+            'F5DA8A7CD1DC17F1BB3A6C9ADB60FB735A713914',
+            [
+                [
+                    'firefly-1x3.mp4', 100000000, 100000000, 2, 86, 96, False,
+                    -1, -1, -1, -1, -1
+                ],
+                [
+                    'hello.txt', 100000000, 100000000, 2, 181, 96, False,
+                    -1, -1, -1, -1, -1
+                ],
+            ]
+        ],
+        'build': 31466
     }
 )
 
@@ -69,3 +90,18 @@ class TestUTorrent(TestCase):
 
         self.assertTrue(torrents.utorrent_ui.get_completed(self.down_1))
         self.assertFalse(torrents.utorrent_ui.get_completed(self.down_2))
+
+    @patch('torrents.utorrent_ui.ut_client')
+    def test_get_files(self, ut_client):
+        ut_client.list.return_value = UT_LIST
+        ut_client.getfiles.return_value = UT_FILES
+
+        self.assertEqual(
+            torrents.utorrent_ui.get_files(self.down_1),
+            [
+                os.path.join('C:\\downloads\\Firefly.2002.01x03.x264-BLOW',
+                             'firefly-1x3.mp4'),
+                os.path.join('C:\\downloads\\Firefly.2002.01x03.x264-BLOW',
+                             'hello.txt')
+            ]
+        )
