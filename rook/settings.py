@@ -110,7 +110,7 @@ LOGGING = {
     'version': 1,
     'handlers': {
         'console': {
-            'level': 'WARNING',
+            'level': 'DEBUG',
             'class': 'logging.StreamHandler',
         },
         'file': {
@@ -120,7 +120,7 @@ LOGGING = {
         }
     },
     'loggers': {
-        'django.request': {
+        'django': {
             'handlers': ['console', 'file'],
             'propagate': True,
             'level': 'DEBUG',
