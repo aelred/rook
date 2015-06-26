@@ -46,7 +46,14 @@ def cancel_watch():
 def check_downloads():
     # Copy across all completed downloads
     logger.debug('checking downloads')
-    for download in Download.objects.all():
+    try:
+        downloads = Download.objects.all()
+    except Error:
+        # models haven't loaded yet, so return
+        # we catch generic 'Error' because database type is unknown
+        return
+
+    for download in downloads:
         if download.completed:
             logger.info('completed download found: {!r}'.format(download))
             # create a non-daemon thread so will not get terminated
