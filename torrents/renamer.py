@@ -28,10 +28,10 @@ def start_watch():
 
 def _repeat_watch():
     global timer
+    check_downloads()
     timer = threading.Timer(INTERVAL, _repeat_watch)
     timer.daemon = True
     timer.start()
-    check_downloads()
 
 
 def cancel_watch():
