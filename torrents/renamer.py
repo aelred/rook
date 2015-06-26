@@ -47,10 +47,10 @@ def check_downloads():
     # Copy across all completed downloads
     logger.debug('checking downloads')
     try:
-        downloads = Download.objects.all()
-    except Error:
+        downloads = list(Download.objects.all())
+    except:
         # models haven't loaded yet, so return
-        # we catch generic 'Error' because database type is unknown
+        # we catch generic exceptions because database type is unknown
         return
 
     for download in downloads:
