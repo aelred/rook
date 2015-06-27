@@ -98,9 +98,14 @@ class DownloadShowTest(FunctionalTest):
         fname = 'The Big Bang Theory S01E01.mkv'
         fpath = os.path.join(self.torrents_dir, fname)
 
+        # The files in the torrent
+        files = [(fname, '<VIDEO DATA HERE>'), ('info stuff.txt', 'hi')]
+
         def addurl(url):
-            with open(fpath, 'a') as f:
-                f.write('<VIDEO DATA HERE>')
+            for name, data in files:
+                path = os.path.join(self.torrents_dir, name)
+                with open(path, 'a') as f:
+                    f.write(data)
         ut.addurl.side_effect = addurl
 
         started_status = 201
@@ -142,9 +147,9 @@ class DownloadShowTest(FunctionalTest):
                     'something',
                     [
                         [
-                            fname, 100000000, 100000000, 2, 86, 96, False,
+                            name, 100000000, 100000000, 2, 86, 96, False,
                             -1, -1, -1, -1, -1
-                        ],
+                        ] for name, data in files
                     ]
                 ],
                 'build': 31466
@@ -159,7 +164,7 @@ class DownloadShowTest(FunctionalTest):
         self.assertTrue(ut.addurl.called)
 
         # The user sees that the torrent is downloading in the download folder
-        self.assertEquals([fname], os.listdir(self.torrents_dir))
+        self.assertIn(fname, os.listdir(self.torrents_dir))
 
         # The user looks in their videos directory and sees the download isn't
         # done yet...
