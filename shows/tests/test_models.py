@@ -1,13 +1,34 @@
 from django.test import TestCase
 from django.core.exceptions import ValidationError
+from unittest.mock import patch, Mock
+import threading
+import time
 
-from shows.models import Show, Season, Episode
+from shows.models import _active_sleep, Show, Season, Episode, _t
 
 _house_tvdbid = 73255
 _dexter_tvdbid = 79349
 
 
+class ModelsTest(TestCase):
+
+    def test_cache_off(self):
+        # cache must be off so updating TV show data works correctly.
+        # the rook database acts as a cache, so this doesn't cause too much
+        # additional traffic
+        self.assertFalse(_t.config['cache_enabled'])
+
+    def test_active_sleep(self):
+        start = time.time()
+        _active_sleep(0.1)
+        end = time.time()
+        self.assertAlmostEqual(end-start, 0.1, delta=0.05)
+
+
 class ShowModelTest(TestCase):
+
+    def tearDown(self):
+        Show.objects._update_thread_started = False
 
     def test_get_absolute_url(self):
         id_ = _house_tvdbid
@@ -72,6 +93,74 @@ class ShowModelTest(TestCase):
         self.assertFalse(show.populated)
         self.assertEqual(Season.objects.count(), 0)
         self.assertEqual(Episode.objects.count(), 0)
+
+    @patch('shows.models.threading.Thread')
+    def test_start_update_thread(self, thread):
+        thread.return_value.daemon = False
+        Show.objects.start_update_thread()
+        thread.assert_called_with(target=Show.objects._update_thread)
+        self.assertTrue(thread.return_value.daemon)
+        thread.return_value.start.assert_called_with()
+
+        # Make sure thread only starts once
+        thread.reset_mock()
+        Show.objects.start_update_thread()
+        self.assertFalse(thread.called)
+
+    @patch('shows.models._active_sleep')
+    @patch('shows.models.Show.objects._update_shows')
+    def test_update_thread(self, update_shows, active_sleep):
+        # Create mock sleep event that wakes when we tell it to
+        wake_event = threading.Event()
+
+        def sleep_mock(interval):
+            wake_event.wait()
+            wake_event.clear()
+        active_sleep.side_effect = sleep_mock
+
+        Show.objects.start_update_thread()
+        self.assertFalse(update_shows.called)
+        active_sleep.assert_called_once_with(60 * 60 * 24)
+        active_sleep.reset_mock()
+
+        # wake up update thread
+        wake_event.set()
+        time.sleep(0.1)
+        update_shows.assert_called_once_with()
+        active_sleep.assert_called_once_with(60 * 60 * 24)
+        active_sleep.reset_mock()
+
+        # Make sure unsetting flag ends thread
+        Show.objects._update_thread_started = False
+        wake_event.set()
+        time.sleep(0.1)
+        self.assertFalse(active_sleep.called)
+
+    @patch('shows.models._t')
+    def test_update_shows(self, tvdb):
+        id_ = -101
+        t_show = tvdb.__getitem__.return_value
+        t_show.__getitem__.return_value = 'My made-up show'
+        season_1 = Mock()
+        season_1.items.return_value = [
+            (1, {'episodename': 'one'}), (2, {'episodename': 'two'})
+        ]
+        t_show.items.return_value = [(1, season_1)]
+
+        # create show from data
+        show = Show.objects.from_tvdb(id_)
+        self.assertEqual(show.title, 'My made-up show')
+        self.assertEqual(1, Season.objects.count())
+        self.assertEqual(2, Episode.objects.count())
+
+        # a new season is added to thetvdb and an episode changes title
+        season_1.items.return_value[0][1]['episodename'] = 'One'
+        season_2 = Mock()
+        season_2.items.return_value = [(1, {'episodename': 'reboot'})]
+        t_show.items.return_value.append((2, season_2))
+        Show.objects._update_shows()
+        self.assertEqual(2, Season.objects.count())
+        self.assertEqual(3, Episode.objects.count())
 
 
 class SeasonModelTest(TestCase):

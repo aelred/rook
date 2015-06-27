@@ -1,11 +1,26 @@
 from django.db import models
 from django.core.urlresolvers import reverse
+import threading
+import time
 
 import tvdb_api
-_t = tvdb_api.Tvdb()
+_t = tvdb_api.Tvdb(cache=False)
+
+
+def _active_sleep(interval):
+    # Sleep, but occasionally wake to check the system time.
+    # Takes into account time when the system is off.
+    sleep_time = min(60, interval / 10)
+    start = time.time()
+    while time.time() - start < interval:
+        time.sleep(sleep_time)
 
 
 class ShowManager(models.Manager):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._update_thread_started = False
 
     def from_tvdb(self, id_, populate=True):
         # Load a show from the tvdb using a TVDB id.
@@ -32,15 +47,35 @@ class ShowManager(models.Manager):
 
         # populate show data if required
         if populate:
-            for snum, tvdb_season in tvdb_show.items():
-                season = Season.objects.create(show=show, num=snum)
-
-                for enum, episode in tvdb_season.items():
-                    Episode.objects.create(
-                        season=season, num=enum, title=episode['episodename']
-                    )
+            self._populate_show(show, tvdb_show)
 
         return show
+
+    def start_update_thread(self):
+        if not self._update_thread_started:
+            thread = threading.Thread(target=self._update_thread)
+            thread.daemon = True
+            self._update_thread_started = True
+            thread.start()
+
+    def _update_thread(self):
+        while self._update_thread_started:
+            _active_sleep(60 * 60 * 24)
+            self._update_shows()
+
+    def _update_shows(self):
+        for show in Show.objects.all():
+            self._populate_show(show, _t[show.id])
+
+    def _populate_show(self, show, tvdb_show):
+        for snum, tvdb_season in tvdb_show.items():
+            season = Season.objects.update_or_create(show=show, num=snum)[0]
+
+            for enum, episode in tvdb_season.items():
+                Episode.objects.update_or_create(
+                    season=season, num=enum,
+                    defaults={'title': episode['episodename']}
+                )
 
 
 class Show(models.Model):

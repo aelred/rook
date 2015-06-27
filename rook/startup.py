@@ -2,6 +2,7 @@ import urllib
 
 import settings.config
 import torrents.renamer
+from shows.models import Show
 
 
 def run():
@@ -16,3 +17,4 @@ def run():
         pass
 
     torrents.renamer.start_watch()
+    Show.objects.start_update_thread()
