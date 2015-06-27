@@ -28,10 +28,13 @@ class TestRenamer(TestCase):
             return {self.download_1: True, self.download_2: False}[d]
         self.utorrent.get_completed = get_completed
 
+        self.files_1 = ['~/Downloads/firefly s01e01.mkv']
+        self.files_2 = ['~/Downloads/ff0102.mp4']
+
         def get_files(d):
             return {
-                self.download_1: ['~/Downloads/firefly s01e01.mkv'],
-                self.download_2: ['~/Downloads/ff0102.mp4']
+                self.download_1: self.files_1,
+                self.download_2: self.files_2
             }[d]
         self.utorrent.get_files = get_files
 
@@ -115,5 +118,12 @@ class TestRenamer(TestCase):
         renamer.rename_download(self.download_1)
         self.makedirs.assert_called_with('~/Videos/Firefly')
         self.copyfile.assert_called_with(
+            '~/Downloads/firefly s01e01.mkv',
+            '~/Videos/Firefly/Firefly - S01E01 - Serenity.mkv')
+
+    def test_rename_download_only_videos(self):
+        self.files_1.append('~/Downloads/firefly-theme.mp3')
+        renamer.rename_download(self.download_1)
+        self.copyfile.assert_called_once_with(
             '~/Downloads/firefly s01e01.mkv',
             '~/Videos/Firefly/Firefly - S01E01 - Serenity.mkv')

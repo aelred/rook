@@ -8,6 +8,8 @@ from settings.config import config
 
 INTERVAL = 60.0
 
+VIDEO_EXTS = ['.wmv', '.avi', '.flv', '.mov', '.mp4', '.mkv', '.mpg', '.m4v']
+
 watch_started = False
 
 timer = None
@@ -70,8 +72,9 @@ def rename_download(download):
 
     for source in download.files:
         ext = os.path.splitext(source)[1]
-        dest = os.path.join(dest_folder, name) + ext
-        logger.info('copying {} to {}'.format(source, dest))
-        shutil.copyfile(source, dest)
+        if ext in VIDEO_EXTS:
+            dest = os.path.join(dest_folder, name) + ext
+            logger.info('copying {} to {}'.format(source, dest))
+            shutil.copyfile(source, dest)
 
     download.delete()
