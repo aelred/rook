@@ -66,18 +66,6 @@ DATABASES = {
     }
 }
 
-import os
-travis = os.environ.get('travis', False)
-if travis or True:
-    DATABASES['default'] = {
-        'ENGINE': 'django.db.backends.mysql',
-        'USER': 'root',
-        'PASSWORD': '',
-        'HOST': '127.0.0.1',
-        'PORT': '3306',
-        'OPTIONS': {'init_command': 'SET storage_engine=MEMORY'}
-    }
-
 # Internationalization
 # https://docs.djangoproject.com/en/1.7/topics/i18n/
 
