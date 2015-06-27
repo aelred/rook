@@ -15,8 +15,12 @@ class Torrent(models.Model):
                                           episode.season.num, episode.num)
 
         for result in tpb.search(term):
-            yield Torrent.objects.create(episode=episode, name=result['name'],
-                                         url=result['url'])
+            try:
+                torrent = Torrent.objects.get(url=result['url'])
+            except Torrent.DoesNotExist:
+                torrent = Torrent.objects.create(
+                    episode=episode, name=result['name'], url=result['url'])
+            yield torrent
 
     episode = models.ForeignKey(Episode)
     name = models.TextField()

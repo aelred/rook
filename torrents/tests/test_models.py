@@ -32,6 +32,10 @@ class TorrentModelTest(TestCase):
 
         self.assertTrue(has_torrents)
 
+        # test searching for the same torrents twice
+        # should not raise database errors
+        next(Torrent.find_all(self.episode_1))
+
     def test_unique(self):
         # Test good state
         torrent_1 = Torrent.objects.create(episode=self.episode_1, name='a',
