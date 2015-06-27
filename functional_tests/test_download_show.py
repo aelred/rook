@@ -184,7 +184,7 @@ class DownloadShowTest(FunctionalTest):
             os.listdir(os.path.join(self.videos_dir, 'The Big Bang Theory')))
 
         # The user sees that the file is still in their torrents directory
-        self.assertEquals([fname], os.listdir(self.torrents_dir))
+        self.assertIn(fname, os.listdir(self.torrents_dir))
 
         # The user checks both files plays correctly (the contents is right)
         with open(os.path.join(self.videos_dir, 'The Big Bang Theory',
