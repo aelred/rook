@@ -4,5 +4,8 @@ python:
 before_install:
     - "export DISPLAY=:99.0"
     - "sh -e /etc/init.d/xvfb start"
+    - "sudo add-apt-repository ppa:ondrej/apache2 -y"
+    - "sudo apt-get update -q"
+    - "sudo apt-get install sqlite3"
 install: "pip3 install -r requirements.txt"
 script: "python3 manage.py test --webdriver=firefox"
