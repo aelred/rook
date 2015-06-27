@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from settings.config import config, write, read, update
+from settings.config import config, write, read, update, videos_path
 
 from unittest.mock import patch, MagicMock
 
@@ -43,3 +43,8 @@ class TestConfig(TestCase):
     def test_update(self, open_func, utorrent_ui):
         update()
         utorrent_ui.set_params.assert_called_once_with(**config['utorrent'])
+
+    @patch('settings.config.os.path.expanduser')
+    def test_videos_path(self, expanduser, open_func, utorrent_ui):
+        self.assertEqual(videos_path(), expanduser.return_value)
+        expanduser.assert_called_once_with('~/Videos')

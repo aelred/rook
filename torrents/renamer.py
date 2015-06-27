@@ -4,7 +4,7 @@ import os
 import logging
 
 from torrents.models import Download
-from settings.config import config
+from settings import config
 
 INTERVAL = 60.0
 
@@ -62,11 +62,10 @@ def rename_download(download):
     episode = download.torrent.episode
     season = episode.season
     show = season.show
-    videos = config['general']['videos']
     name = '{} - S{:02d}E{:02d} - {}'.format(
         show.title, season.num, episode.num, episode.title)
 
-    dest_folder = os.path.join(videos, show.title)
+    dest_folder = os.path.join(config.videos_path(), show.title)
     if not os.path.exists(dest_folder):
         os.makedirs(dest_folder)
 

@@ -45,6 +45,8 @@ class TestRenamer(TestCase):
         self.makedirs = patch('torrents.renamer.os.makedirs').start()
         self.copyfile = patch('torrents.renamer.shutil.copyfile').start()
         self.path_exists = patch('torrents.renamer.os.path.exists').start()
+        self.videos_path = patch('torrents.renamer.config.videos_path').start()
+        self.videos_path.return_value = 'vids'
         self.make_downloads()
 
     def tearDown(self):
@@ -110,20 +112,20 @@ class TestRenamer(TestCase):
         self.assertFalse(self.makedirs.called)
         self.copyfile.assert_called_with(
             '~/Downloads/firefly s01e01.mkv',
-            '~/Videos/Firefly/Firefly - S01E01 - Serenity.mkv')
+            'vids/Firefly/Firefly - S01E01 - Serenity.mkv')
         self.assertNotIn(self.download_1, Download.objects.all())
 
     def test_rename_download_make_dir(self):
         self.path_exists.return_value = False
         renamer.rename_download(self.download_1)
-        self.makedirs.assert_called_with('~/Videos/Firefly')
+        self.makedirs.assert_called_with('vids/Firefly')
         self.copyfile.assert_called_with(
             '~/Downloads/firefly s01e01.mkv',
-            '~/Videos/Firefly/Firefly - S01E01 - Serenity.mkv')
+            'vids/Firefly/Firefly - S01E01 - Serenity.mkv')
 
     def test_rename_download_only_videos(self):
         self.files_1.append('~/Downloads/firefly-theme.mp3')
         renamer.rename_download(self.download_1)
         self.copyfile.assert_called_once_with(
             '~/Downloads/firefly s01e01.mkv',
-            '~/Videos/Firefly/Firefly - S01E01 - Serenity.mkv')
+            'vids/Firefly/Firefly - S01E01 - Serenity.mkv')

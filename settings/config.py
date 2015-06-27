@@ -52,3 +52,7 @@ def write():
 
 def update():
     utorrent_ui.set_params(**config['utorrent'])
+
+
+def videos_path():
+    return os.path.expanduser(config['general']['videos'])
